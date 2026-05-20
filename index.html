@@ -363,6 +363,40 @@
         #final-buttons { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         .final-button { width: 65px; height: 65px; font-size: 2.2em; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.1s; padding: 0; }
 
+        /* Level 11: Alchemy Flasks */
+        #flask-container { display: flex; gap: 20px; margin-top: 20px; }
+        .flask { width: 60px; height: 80px; border: 4px solid rgba(255,255,255,0.4); border-radius: 10px 10px 30px 30px; cursor: pointer; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); transition: transform 0.2s; overflow: hidden; }
+        .flask::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; }
+        .flask:hover { transform: translateY(-10px) scale(1.1); }
+        .flask.flask-red::after { background: #ef4444; box-shadow: 0 0 15px #ef4444; }
+        .flask.flask-green::after { background: #22c55e; box-shadow: 0 0 15px #22c55e; }
+        .flask.flask-blue::after { background: #3b82f6; box-shadow: 0 0 15px #3b82f6; }
+
+        /* Level 12: Simon Memory */
+        #simon-board { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .simon-btn { width: 100px; height: 100px; border-radius: 15px; border: 4px solid rgba(255,255,255,0.2); cursor: pointer; transition: all 0.2s; opacity: 0.5; }
+        .simon-btn.active { opacity: 1; transform: scale(1.1); border-color: #fff; box-shadow: 0 0 30px currentColor; }
+
+        /* Level 13: Safe Dials */
+        #safe-container { display: flex; gap: 15px; background: #333; padding: 20px; border-radius: 15px; border: 5px solid #555; }
+        .safe-dial-group { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .safe-btn { width: 40px; height: 40px; border-radius: 5px; font-size: 1.2em; padding: 0; }
+        .safe-number { font-size: 2.5em; font-weight: bold; background: #000; color: #00f0ff; padding: 10px 20px; border-radius: 5px; font-family: monospace; box-shadow: inset 0 0 10px rgba(0,240,255,0.3); }
+
+        /* Level 14: Memory Cards */
+        #memory-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px; }
+        .memory-card { width: 60px; height: 80px; background: linear-gradient(135deg, var(--primary-color), #e85d04); border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 2em; color: transparent; border: 2px solid #fff; transition: transform 0.3s; box-shadow: 0 5px 10px rgba(0,0,0,0.4); }
+        .memory-card.flipped { background: #2b2b2b; color: #fff; border-color: var(--primary-color); transform: rotateY(180deg); }
+        .memory-card.matched { visibility: hidden; }
+
+        /* Level 15: Final Pedestals */
+        #pedestal-container { display: flex; gap: 15px; margin-top: 20px; }
+        .pedestal { width: 70px; height: 90px; background: linear-gradient(to top, #4a4e69, #22223b); border: 2px solid #9a8c98; border-radius: 10px 10px 0 0; display: flex; justify-content: center; align-items: flex-start; padding-top: 10px; font-size: 2.5em; cursor: pointer; transition: all 0.3s; position: relative; }
+        .pedestal::before { content: ''; position: absolute; bottom: -10px; left: -10px; right: -10px; height: 20px; background: #1a1a2e; border-radius: 50%; z-index: -1; }
+        .pedestal:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(252, 163, 17, 0.4); border-color: var(--primary-color); }
+        .pedestal.filled { cursor: default; transform: none; box-shadow: 0 -20px 50px rgba(255,255,255,0.3); }
+
+        
         /* --- 6. Hard Mode Specifics --- */
         #hard-level-select-container, #god-mode-select-container { border-top: 1px solid rgba(255,255,255,0.2); margin-top: 30px; padding-top: 20px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; width: 100%; }
         #hard-level-select-container button, #god-mode-select-container button { width: auto; font-size: 1em; padding: 8px 18px; border-radius: 20px; }
@@ -574,6 +608,84 @@
                 <div id="final-buttons"></div> 
             </div>
             
+            <div id="level-11" class="level"> 
+                <h2 data-lang-key="l11_title"></h2> 
+                <p data-lang-key="l11_desc"></p> 
+                <div id="flask-container">
+                    <div class="flask flask-red" data-color="red"></div>
+                    <div class="flask flask-green" data-color="green"></div>
+                    <div class="flask flask-blue" data-color="blue"></div>
+                </div>
+                <div id="l11-clue" class="hidden-element"> 
+                    <p data-lang-key="l11_clue_text"></p> 
+                    <button id="l11-next-btn" data-lang-key="l11_next_btn"></button> 
+                </div> 
+            </div>
+
+            <div id="level-12" class="level"> 
+                <h2 data-lang-key="l12_title"></h2> 
+                <p data-lang-key="l12_desc"></p> 
+                <button id="simon-start-btn" data-lang-key="l12_start_btn"></button>
+                <div id="simon-board">
+                    <div class="simon-btn" data-id="0" style="background-color: #ef4444;"></div>
+                    <div class="simon-btn" data-id="1" style="background-color: #3b82f6;"></div>
+                    <div class="simon-btn" data-id="2" style="background-color: #eab308;"></div>
+                    <div class="simon-btn" data-id="3" style="background-color: #22c55e;"></div>
+                </div>
+                <div id="l12-clue" class="hidden-element"> 
+                    <p data-lang-key="l12_clue_text"></p> 
+                    <button id="l12-next-btn" data-lang-key="l12_next_btn"></button> 
+                </div> 
+            </div>
+
+            <div id="level-13" class="level"> 
+                <h2 data-lang-key="l13_title"></h2> 
+                <p data-lang-key="l13_desc"></p> 
+                <div id="safe-container">
+                    <div class="safe-dial-group">
+                        <button class="safe-btn safe-up" data-dial="0">▲</button>
+                        <div class="safe-number" id="safe-dial-0">0</div>
+                        <button class="safe-btn safe-down" data-dial="0">▼</button>
+                    </div>
+                    <div class="safe-dial-group">
+                        <button class="safe-btn safe-up" data-dial="1">▲</button>
+                        <div class="safe-number" id="safe-dial-1">0</div>
+                        <button class="safe-btn safe-down" data-dial="1">▼</button>
+                    </div>
+                    <div class="safe-dial-group">
+                        <button class="safe-btn safe-up" data-dial="2">▲</button>
+                        <div class="safe-number" id="safe-dial-2">0</div>
+                        <button class="safe-btn safe-down" data-dial="2">▼</button>
+                    </div>
+                </div>
+                <button id="safe-submit-btn" style="margin-top: 15px;" data-lang-key="l13_submit_btn"></button>
+                <div id="l13-clue" class="hidden-element"> 
+                    <p data-lang-key="l13_clue_text"></p> 
+                    <button id="l13-next-btn" data-lang-key="l13_next_btn"></button> 
+                </div> 
+            </div>
+
+            <div id="level-14" class="level"> 
+                <h2 data-lang-key="l14_title"></h2> 
+                <p data-lang-key="l14_desc"></p> 
+                <div id="memory-board"></div>
+                <div id="l14-clue" class="hidden-element"> 
+                    <p data-lang-key="l14_clue_text"></p> 
+                    <button id="l14-next-btn" data-lang-key="l14_next_btn"></button> 
+                </div> 
+            </div>
+
+            <div id="level-15" class="level"> 
+                <h2 data-lang-key="l15_title"></h2> 
+                <p data-lang-key="l15_desc"></p> 
+                <div id="pedestal-container">
+                    <div class="pedestal" data-slot="0"></div>
+                    <div class="pedestal" data-slot="1"></div>
+                    <div class="pedestal" data-slot="2"></div>
+                    <div class="pedestal" data-slot="3"></div>
+                </div>
+            </div>
+            
             <!-- Win Screen -->
             <div id="win-screen" class="level screen"> 
                 <h2 data-lang-key="win_title"></h2> 
@@ -766,6 +878,31 @@
                     l10_msg_wrong_sequence: "顺序错误，重置了！",
                     win_title: "恭喜通关！",
                     win_desc: "你解开了所有的谜题，证明了你的智慧与洞察力。",
+                    l11_title: "第十一关：炼金试剂",
+                    l11_desc: "按正确的配方混合药水：红、绿、蓝。",
+                    l11_clue_text: "试剂沸腾，凝结成了一块发光的符石。",
+                    l11_next_btn: "拿起符石",
+                    l11_msg_wrong: "顺序错误，药水重置了！",
+                    l12_title: "第十二关：远古的回音",
+                    l12_desc: "记住并重复这段色彩的旋律。",
+                    l12_start_btn: "开始聆听",
+                    l12_clue_text: "旋律的共鸣化作了一把音叉。",
+                    l12_next_btn: "收下音叉",
+                    l12_msg_wrong: "旋律断裂，请重试！",
+                    l13_title: "第十三关：机械保险箱",
+                    l13_desc: "转动表盘，输入隐藏的密码（提示：3-1-4）。",
+                    l13_submit_btn: "解锁",
+                    l13_clue_text: "保险箱咔嚓一声打开了，里面是一面古铜镜。",
+                    l13_next_btn: "拿走铜镜",
+                    l13_msg_wrong: "密码错误，打不开。",
+                    l14_title: "第十四关：记忆的倒影",
+                    l14_desc: "翻开卡片，找出所有匹配的符号。",
+                    l14_clue_text: "幻影消散，留下了一颗时空核心。",
+                    l14_next_btn: "拾取核心",
+                    l15_title: "第十五关：真实之门",
+                    l15_desc: "将你收集的四件圣物依次放置在基座上。",
+                    l15_msg_placed: "圣物已放置！",
+                    l15_msg_wrong: "圣物共鸣失败，请按顺序放置！",
                     play_again_btn: "再玩一次",
                     colors: { red: '红色', blue: '蓝色', yellow: '黄色', cyan: '青色', purple: '紫色', green: '绿色', orange: '橙色' },
                     hard_game_over_title: "挑战失败",
@@ -862,6 +999,31 @@
                     l10_msg_wrong_sequence: "Wrong sequence, resetting!",
                     win_title: "Congratulations!",
                     win_desc: "You have solved all the puzzles, proving your wisdom and insight.",
+                    l11_title: "Level 11: The Alchemist's Potions",
+                    l11_desc: "Mix the potions in the correct formula: Red, Green, Blue.",
+                    l11_clue_text: "The potion boils and crystallizes into a glowing Runestone.",
+                    l11_next_btn: "Take the Runestone",
+                    l11_msg_wrong: "Wrong sequence, the potions reset!",
+                    l12_title: "Level 12: Ancient Echoes",
+                    l12_desc: "Remember and repeat the melody of colors.",
+                    l12_start_btn: "Start Listening",
+                    l12_clue_text: "The resonance of the melody formed a Tuning Fork.",
+                    l12_next_btn: "Take the Tuning Fork",
+                    l12_msg_wrong: "The melody broke, try again!",
+                    l13_title: "Level 13: Mechanical Safe",
+                    l13_desc: "Turn the dials to enter the hidden password (Hint: 3-1-4).",
+                    l13_submit_btn: "Unlock",
+                    l13_clue_text: "The safe clicks open, revealing an ancient Bronze Mirror.",
+                    l13_next_btn: "Take the Mirror",
+                    l13_msg_wrong: "Wrong password, it won't budge.",
+                    l14_title: "Level 14: Reflections of Memory",
+                    l14_desc: "Flip the cards and find all matching symbols.",
+                    l14_clue_text: "The illusions dissipate, leaving a Time Core.",
+                    l14_next_btn: "Pick up the Core",
+                    l15_title: "Level 15: The Gate of Truth",
+                    l15_desc: "Place the four sacred relics you collected onto the pedestals in order.",
+                    l15_msg_placed: "Relic placed!",
+                    l15_msg_wrong: "Resonance failed, place them in the correct order!",
                     play_again_btn: "Play Again",
                     colors: { red: 'red', blue: 'blue', yellow: 'yellow', cyan: 'cyan', purple: 'purple', green: 'green', orange: 'orange' },
                     hard_game_over_title: "Challenge Failed",
@@ -1799,7 +1961,7 @@
                         if (playerSequence.length === correctSequence.length) {
                             if (JSON.stringify(playerSequence) === JSON.stringify(correctSequence)) {
                                 showMessage('l10_msg_chest_open', 3000);
-                                goToLevel('win');
+                                goToLevel(11);
                             } else {
                                 playSound('error'); // Error sound
                                 showMessage('l10_msg_wrong_sequence');
@@ -1812,7 +1974,240 @@
                     buttonsContainer.appendChild(button);
                 });
             }
-// --- 8. Hard Mode Logic ---
+// --- 9. Inner Sanctum Logic (Levels 11-15) ---
+            window.initLevel11 = function() {
+                const descEl = document.querySelector('#level-11 p');
+                typeWriter(descEl, getText('l11_desc')); 
+                
+                let sequence = [];
+                const correctSequence = ['red', 'green', 'blue'];
+                
+                document.querySelectorAll('.flask').forEach(flask => {
+                    flask.onclick = () => {
+                        playSound('click');
+                        sequence.push(flask.dataset.color);
+                        flask.style.transform = 'scale(0.9)';
+                        setTimeout(() => flask.style.transform = 'scale(1)', 150);
+                        
+                        if (sequence.length === correctSequence.length) {
+                            if (JSON.stringify(sequence) === JSON.stringify(correctSequence)) {
+                                addItemToInventory('🪨', 'Runestone');
+                                const clue = document.getElementById('l11-clue');
+                                clue.classList.remove('hidden-element');
+                                clue.classList.add('pop-in');
+                            } else {
+                                playSound('error');
+                                showMessage('l11_msg_wrong');
+                                sequence = []; // Reset
+                                document.getElementById('flask-container').classList.add('shake');
+                                setTimeout(() => document.getElementById('flask-container').classList.remove('shake'), 500);
+                            }
+                        }
+                    };
+                });
+            }
+            document.getElementById('l11-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(12); });
+
+            window.initLevel12 = function() {
+                const descEl = document.querySelector('#level-12 p');
+                typeWriter(descEl, getText('l12_desc')); 
+                
+                const startBtn = document.getElementById('simon-start-btn');
+                const btns = document.querySelectorAll('.simon-btn');
+                let sequence = [];
+                let playerSequence = [];
+                let isPlaying = false;
+                
+                startBtn.onclick = () => {
+                    playSound('click');
+                    startBtn.style.display = 'none';
+                    // Generate 4 random colors (0-3)
+                    sequence = Array(4).fill(0).map(() => Math.floor(Math.random() * 4));
+                    playerSequence = [];
+                    playSequence();
+                };
+                
+                function playSequence() {
+                    isPlaying = true;
+                    let i = 0;
+                    const interval = setInterval(() => {
+                        const btn = document.querySelector(`.simon-btn[data-id="${sequence[i]}"]`);
+                        playSound('click');
+                        btn.classList.add('active');
+                        setTimeout(() => btn.classList.remove('active'), 400);
+                        i++;
+                        if (i >= sequence.length) {
+                            clearInterval(interval);
+                            isPlaying = false;
+                        }
+                    }, 800);
+                }
+                
+                btns.forEach(btn => {
+                    btn.onclick = () => {
+                        if (isPlaying) return;
+                        playSound('click');
+                        btn.classList.add('active');
+                        setTimeout(() => btn.classList.remove('active'), 200);
+                        playerSequence.push(parseInt(btn.dataset.id));
+                        
+                        const currentIdx = playerSequence.length - 1;
+                        if (playerSequence[currentIdx] !== sequence[currentIdx]) {
+                            playSound('error');
+                            showMessage('l12_msg_wrong');
+                            startBtn.style.display = 'block'; // Show start button again
+                            playerSequence = [];
+                        } else if (playerSequence.length === sequence.length) {
+                            addItemToInventory('🔱', 'Tuning Fork');
+                            const clue = document.getElementById('l12-clue');
+                            clue.classList.remove('hidden-element');
+                            clue.classList.add('pop-in');
+                        }
+                    };
+                });
+            }
+            document.getElementById('l12-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(13); });
+
+            window.initLevel13 = function() {
+                const descEl = document.querySelector('#level-13 p');
+                typeWriter(descEl, getText('l13_desc')); 
+                
+                let dials = [0, 0, 0];
+                const target = [3, 1, 4]; // The hidden password
+                
+                document.querySelectorAll('.safe-btn').forEach(btn => {
+                    btn.onclick = () => {
+                        playSound('click');
+                        const dialIdx = parseInt(btn.dataset.dial);
+                        if (btn.classList.contains('safe-up')) {
+                            dials[dialIdx] = (dials[dialIdx] + 1) % 10;
+                        } else {
+                            dials[dialIdx] = (dials[dialIdx] - 1 + 10) % 10;
+                        }
+                        document.getElementById(`safe-dial-${dialIdx}`).textContent = dials[dialIdx];
+                    };
+                });
+                
+                document.getElementById('safe-submit-btn').onclick = () => {
+                    if (JSON.stringify(dials) === JSON.stringify(target)) {
+                        playSound('success');
+                        addItemToInventory('🪞', 'Bronze Mirror');
+                        const clue = document.getElementById('l13-clue');
+                        clue.classList.remove('hidden-element');
+                        clue.classList.add('pop-in');
+                        document.getElementById('safe-submit-btn').style.display = 'none';
+                    } else {
+                        playSound('error');
+                        showMessage('l13_msg_wrong');
+                        document.getElementById('safe-container').classList.add('shake');
+                        setTimeout(() => document.getElementById('safe-container').classList.remove('shake'), 500);
+                    }
+                };
+            }
+            document.getElementById('l13-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(14); });
+
+            window.initLevel14 = function() {
+                const descEl = document.querySelector('#level-14 p');
+                typeWriter(descEl, getText('l14_desc')); 
+                
+                const board = document.getElementById('memory-board');
+                board.innerHTML = ''; // Reset board
+                
+                const symbols = ['🔥', '💧', '⚡', '🌿'];
+                const deck = shuffle([...symbols, ...symbols]); // 4 pairs, 8 cards total
+                let flippedCards = [];
+                let matchedPairs = 0;
+                
+                deck.forEach((symbol, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'memory-card';
+                    card.dataset.symbol = symbol;
+                    card.dataset.index = index;
+                    
+                    card.onclick = () => {
+                        // Prevent clicking if 2 cards are already flipped, or if clicking an already flipped/matched card
+                        if (flippedCards.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+                        
+                        playSound('click');
+                        card.classList.add('flipped');
+                        card.textContent = symbol;
+                        flippedCards.push(card);
+                        
+                        if (flippedCards.length === 2) {
+                            if (flippedCards[0].dataset.symbol === flippedCards[1].dataset.symbol) {
+                                // Match!
+                                playSound('success');
+                                flippedCards[0].classList.add('matched');
+                                flippedCards[1].classList.add('matched');
+                                matchedPairs++;
+                                flippedCards = [];
+                                
+                                if (matchedPairs === symbols.length) {
+                                    setTimeout(() => {
+                                        addItemToInventory('🔮', 'Time Core');
+                                        const clue = document.getElementById('l14-clue');
+                                        clue.classList.remove('hidden-element');
+                                        clue.classList.add('pop-in');
+                                    }, 500);
+                                }
+                            } else {
+                                // No match
+                                playSound('error');
+                                setTimeout(() => {
+                                    flippedCards[0].classList.remove('flipped');
+                                    flippedCards[0].textContent = '';
+                                    flippedCards[1].classList.remove('flipped');
+                                    flippedCards[1].textContent = '';
+                                    flippedCards = [];
+                                }, 800);
+                            }
+                        }
+                    };
+                    board.appendChild(card);
+                });
+            }
+            document.getElementById('l14-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(15); });
+
+            window.initLevel15 = function() {
+                const descEl = document.querySelector('#level-15 p');
+                typeWriter(descEl, getText('l15_desc')); 
+                
+                // The exact order the items were collected in Levels 11-14
+                const correctItems = ['🪨', '🔱', '🪞', '🔮'];
+                let placedCount = 0;
+                
+                document.querySelectorAll('.pedestal').forEach(pedestal => {
+                    pedestal.innerHTML = '';
+                    pedestal.classList.remove('filled');
+                    
+                    pedestal.onclick = () => {
+                        if (pedestal.classList.contains('filled')) return;
+                        
+                        const expectedSlot = parseInt(pedestal.dataset.slot);
+                        if (expectedSlot === placedCount) {
+                            playSound('click');
+                            pedestal.classList.add('filled');
+                            pedestal.textContent = correctItems[placedCount];
+                            showMessage('l15_msg_placed', 1000);
+                            placedCount++;
+                            
+                            if (placedCount === 4) {
+                                setTimeout(() => {
+                                    playSound('success'); // Grand finale
+                                    goToLevel('win'); 
+                                }, 1500);
+                            }
+                        } else {
+                            playSound('error');
+                            showMessage('l15_msg_wrong');
+                            document.getElementById('pedestal-container').classList.add('shake');
+                            setTimeout(() => document.getElementById('pedestal-container').classList.remove('shake'), 500);
+                        }
+                    };
+                });
+            }
+            
+            // --- 8. Hard Mode Logic ---
             function startHardMode() {
                 playSound('click');
                 hardGameState.currentLevel = 1;

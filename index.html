@@ -2,11 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>动态解谜游戏 (Dynamic Puzzle Game) - Remastered</title>
-    <!-- 🤞 Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤞</text></svg>">
     
+    <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
     <style>
         /* --- 1. Global Reset & Theme --- */
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=ZCOOL+QingKe+HuangYou&display=swap');
@@ -37,8 +37,14 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            /* FIX: Use dvh for mobile address bars */
+            height: 100dvh; 
             text-align: center;
             overflow: hidden;
+            
+            /* FIX: Stop "pull to refresh" and screen bouncing on mobile */
+            overscroll-behavior: none;
+            touch-action: none; 
         }
 
         /* --- 2. Layout & Containers --- */
@@ -115,6 +121,15 @@
         #start-screen h1 span:hover { transform: scale(1.1) translateY(-5px); }
 
         p { font-size: 1.2em; line-height: 1.6; max-width: 90%; margin-bottom: 20px; color: #cbd5e1; }
+
+        /* FIX: Prevent highlighting text and UI glitches when tapping rapidly */
+        button, .maze-btn, .tetris-btn, #wall-canvas, .fragment, .jigsaw-piece {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
 
         button, input[type="text"] {
             padding: 12px 25px;

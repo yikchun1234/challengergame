@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>动态解谜游戏 (Dynamic Puzzle Game) - Remastered</title>
+    <!-- 🤞 Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤞</text></svg>">
+    
     <style>
         /* --- 1. Global Reset & Theme --- */
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=ZCOOL+QingKe+HuangYou&display=swap');
@@ -16,7 +18,7 @@
         :root {
             --primary-color: #fca311;
             --primary-hover: #ffb703;
-            --dark-bg: rgba(22, 33, 62, 0.85); /* Glassmorphism base */
+            --dark-bg: rgba(22, 33, 62, 0.85);
             --darker-bg: #0f172a; 
             --text-main: #f8fafc;
             --danger: #ef4444;
@@ -50,6 +52,7 @@
             padding: 20px;
         }
 
+        /* Fixed Centering Issue Here */
         .screen, .game-container, .hard-mode-container {
             width: 100%;
             max-width: 900px;
@@ -66,12 +69,11 @@
             justify-content: center;
             align-items: center;
             gap: 20px;
-            /* Removed position: absolute; so it stays perfectly centered! */
             transition: opacity 0.5s ease, transform 0.5s ease;
         }
-        
+
         .game-container, .hard-mode-container {
-            display: none; /* Initially hidden */
+            display: none; 
             padding: 40px;
         }
 
@@ -165,6 +167,7 @@
 
         .hidden-element { display: none !important; }
 
+        /* Fixed Centering Issue Here */
         .message-box {
             position: fixed;
             bottom: 30px;
@@ -185,6 +188,37 @@
             box-shadow: 0 4px 15px rgba(252, 163, 17, 0.5);
         }
         .message-box.show { opacity: 1; }
+
+        /* --- NEW INVENTORY SYSTEM --- */
+        #inventory-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--primary-color);
+            border-radius: 15px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 500;
+            box-shadow: 0 0 15px rgba(252, 163, 17, 0.2);
+            transition: all 0.5s ease;
+        }
+        #inventory-items { display: flex; gap: 10px; }
+        .inventory-item {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.2);
+        }
 
         /* --- 5. Level Specific Styles --- */
         /* Level 1: Stars */
@@ -222,7 +256,7 @@
             width: 32px; 
             height: 32px; 
             border-radius: 4px; 
-            background-color: rgba(255,255,255,0.03); /* Subtle path color */
+            background-color: rgba(255,255,255,0.03); 
             transition: background-color 0.2s; 
             position: relative; 
             display: flex; 
@@ -230,57 +264,34 @@
             align-items: center; 
         }
         .maze-wall { 
-            background-color: #02040a; /* Dark walls */
+            background-color: #02040a; 
             box-shadow: inset 0 0 10px rgba(0,0,0,1); 
         }
         .maze-player { 
             width: 85%; 
             height: 85%; 
             background-color: #00f0ff; 
-            border-radius: 50%; /* Makes it a circle! */
+            border-radius: 50%; 
             box-shadow: 0 0 15px #00f0ff, 0 0 25px #00f0ff, inset 0 0 10px #fff; 
             animation: pulseGlow 1.5s infinite alternate; 
             z-index: 10;
         }
-        
         @keyframes pulseGlow { 
             from { transform: scale(0.9); box-shadow: 0 0 10px #00f0ff; } 
             to { transform: scale(1.1); box-shadow: 0 0 20px #00f0ff, 0 0 30px #00f0ff; } 
         }
-
-        #maze-controls { 
-            margin-top: 25px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 12px; 
-        }
-        #maze-controls .d-pad-row { 
-            display: flex; 
-            gap: 12px; 
-        }
+        #maze-controls { margin-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        #maze-controls .d-pad-row { display: flex; gap: 12px; }
         .maze-btn { 
-            width: 60px; 
-            height: 60px; 
-            font-size: 2em; 
-            padding: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            border-radius: 12px; 
-            background: rgba(0,0,0,0.4); 
-            border: 2px solid var(--primary-color); 
-            color: var(--primary-color); 
-            box-shadow: 0 0 15px rgba(252, 163, 17, 0.2), inset 0 0 10px rgba(252, 163, 17, 0.2); 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            width: 60px; height: 60px; font-size: 2em; padding: 0; display: flex; justify-content: center; align-items: center; border-radius: 12px; 
+            background: rgba(0,0,0,0.4); border: 2px solid var(--primary-color); color: var(--primary-color); 
+            box-shadow: 0 0 15px rgba(252, 163, 17, 0.2), inset 0 0 10px rgba(252, 163, 17, 0.2); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
         }
         .maze-btn:hover, .maze-btn:active { 
-            background: rgba(252, 163, 17, 0.2); 
-            box-shadow: 0 0 20px rgba(252, 163, 17, 0.6), inset 0 0 15px rgba(252, 163, 17, 0.4); 
-            text-shadow: 0 0 10px var(--primary-color); 
-            transform: scale(0.95); 
+            background: rgba(252, 163, 17, 0.2); box-shadow: 0 0 20px rgba(252, 163, 17, 0.6), inset 0 0 15px rgba(252, 163, 17, 0.4); 
+            text-shadow: 0 0 10px var(--primary-color); transform: scale(0.95); 
         }
-        
+
         /* Level 5: Book */
         #level-5 { transition: background-color 0.8s; border-radius: 20px; }
         #level-5.dark { background-color: #000; box-shadow: inset 0 0 50px rgba(0,0,0,1); }
@@ -294,7 +305,7 @@
         #door { width: 160px; height: 260px; background: linear-gradient(to bottom, #5d4037, #3e2723); border: 12px solid #271611; border-radius: 10px 10px 0 0; margin-bottom: 25px; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
         #door::after { content: ''; position: absolute; right: 20px; top: 50%; width: 15px; height: 15px; background: #ffb703; border-radius: 50%; box-shadow: 0 0 5px #ffb703; }
 
-        /* Level 7: Drag & Drop Fragments (NEW) */
+        /* Level 7: Drag & Drop Fragments */
         #level-7-workspace { display: flex; flex-direction: column; align-items: center; gap: 30px; width: 100%; margin-top: 20px; }
         #fragment-drop-zone { width: 340px; height: 90px; border: 3px dashed var(--primary-color); border-radius: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; background-color: rgba(0,0,0,0.2); transition: all 0.3s ease; }
         #fragment-drop-zone.drag-over { background-color: rgba(252, 163, 17, 0.2); transform: scale(1.05); border-style: solid; box-shadow: 0 0 15px rgba(252,163,17,0.4); }
@@ -313,25 +324,9 @@
         /* Level 9: Map */
         #map-container { width: 100%; max-width: 600px; height: 350px; background-image: url('https://placehold.co/720x480/A98B74/3E2723?text=古老的藏宝图'); background-size: cover; background-position: center; border: 6px solid #5d4037; border-radius: 15px; cursor: crosshair; position: relative; box-shadow: 0 15px 30px rgba(0,0,0,0.6); }
         #treasure-spot { position: absolute; width: 40px; height: 40px; background-color: transparent; border-radius: 50%; }
-        #chest-image {
-            position: absolute;
-            top: 0; 
-            left: 0; 
-            bottom: 0; 
-            right: 0;
-            margin: auto; 
-            width: 100px; 
-            height: 100px; 
-            background: linear-gradient(135deg, var(--primary-color), #e85d04); 
-            border: 4px solid #fff; 
-            border-radius: 15px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            font-size: 3.5em; 
-            animation: popIn 0.5s ease-out forwards; 
-            box-shadow: 0 0 30px var(--primary-color); 
-        }
+        /* Fixed Centering Issue Here */
+        #chest-image { position: absolute; top: 0; left: 0; bottom: 0; right: 0; margin: auto; width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary-color), #e85d04); border: 4px solid #fff; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 3.5em; animation: popIn 0.5s ease-out forwards; box-shadow: 0 0 30px var(--primary-color); }
+
         /* Level 10: Final Chest */
         #final-chest { width: 220px; height: 160px; background: linear-gradient(to bottom, #a67c52, #8b5a2b); border: 12px solid #4a2e15; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 15px 25px rgba(0,0,0,0.5); position: relative; }
         #final-chest::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 20px; background: #333; border: 3px solid #fca311; border-radius: 5px; }
@@ -372,17 +367,20 @@
         @media (max-width: 480px) {
             #start-screen h1 { font-size: 2.2em; }
             button, .win-buttons button { width: 100%; max-width: 250px; }
-            #maze-container { grid-template-columns: repeat(5, 35px); grid-template-rows: repeat(5, 35px); }
             .maze-cell { width: 35px; height: 35px; }
             .maze-btn, .tetris-btn, .luck-btn { width: 50px; height: 50px; font-size: 1.3em; }
             #fragment-drop-zone { width: 100%; }
+            #inventory-bar { bottom: 10px; left: 10px; padding: 8px 15px; }
+            .inventory-item { width: 35px; height: 35px; font-size: 1.2em; }
         }
     </style>
 </head>
 <body>
-<div class="game-wrapper">
+    <div class="game-wrapper">
+        <!-- === START SCREEN === -->
         <div id="start-screen" class="screen">
-            <div style="font-size: 4em; margin-bottom: -15px; animation: pulseGlow 2s infinite alternate;">🤞</div>
+            <!-- Pulsing 🤞 Icon -->
+            <div style="font-size: 4.5em; margin-bottom: -15px; animation: pulseGlow 2s infinite alternate;">🤞</div>
             
             <h1 id="game-title" data-lang-key="game_title"></h1>
             <button id="continue-btn" data-lang-key="continue_btn">继续游戏</button>
@@ -405,12 +403,14 @@
             </div>
         </div>
 
+        <!-- === MAIN GAME CONTAINER === -->
         <div class="game-container">
             <div id="lang-switcher">
                 <button id="lang-zh" class="active">中文</button>
                 <button id="lang-en">EN</button>
             </div>
             
+            <!-- Level 1 -->
             <div id="level-1" class="level"> 
                 <h2 data-lang-key="l1_title"></h2> 
                 <p data-lang-key="l1_desc"></p> 
@@ -418,6 +418,7 @@
                 <button id="l1-next-btn" class="hidden-element" data-lang-key="l1_next_btn"></button> 
             </div>
             
+            <!-- Level 2 -->
             <div id="level-2" class="level"> 
                 <h2 data-lang-key="l2_title"></h2> 
                 <p data-lang-key="l2_desc"></p> 
@@ -436,6 +437,7 @@
                 </div> 
             </div>
             
+            <!-- Level 3 -->
             <div id="level-3" class="level"> 
                 <h2 data-lang-key="l3_title"></h2> 
                 <p data-lang-key="l3_desc"></p> 
@@ -451,6 +453,7 @@
                 </div> 
             </div>
             
+            <!-- Level 4: Neon Maze -->
             <div id="level-4" class="level"> 
                 <h2 data-lang-key="l4_title"></h2> 
                 <p data-lang-key="l4_desc"></p> 
@@ -469,6 +472,7 @@
                 </div> 
             </div>
             
+            <!-- Level 5 -->
             <div id="level-5" class="level"> 
                 <div id="light-switch"></div> 
                 <h2 data-lang-key="l5_title"></h2> 
@@ -481,6 +485,7 @@
                 </div> 
             </div>
             
+            <!-- Level 6 -->
             <div id="level-6" class="level"> 
                 <h2 data-lang-key="l6_title"></h2> 
                 <p data-lang-key="l6_desc"></p> 
@@ -491,21 +496,21 @@
                 </div> 
             </div>
             
+            <!-- Level 7: Drag & Drop Workspace -->
             <div id="level-7" class="level"> 
                 <h2 data-lang-key="l7_title"></h2> 
                 <p data-lang-key="l7_desc"></p> 
-                
                 <div id="level-7-workspace">
                     <div id="fragment-drop-zone"></div>
                     <div id="fragments-container"></div>
                 </div>
-                
                 <div id="l7-clue" class="hidden-element"> 
                     <p data-lang-key="l7_clue_text"></p> 
                     <button id="l7-next-btn" data-lang-key="l7_next_btn"></button> 
                 </div> 
             </div>
             
+            <!-- Level 8 -->
             <div id="level-8" class="level"> 
                 <h2 data-lang-key="l8_title"></h2> 
                 <p data-lang-key="l8_desc"></p> 
@@ -518,6 +523,7 @@
                 </div> 
             </div>
             
+            <!-- Level 9 -->
             <div id="level-9" class="level"> 
                 <h2 data-lang-key="l9_title"></h2> 
                 <p data-lang-key="l9_desc"></p> 
@@ -530,6 +536,7 @@
                 </div> 
             </div>
             
+            <!-- Level 10 -->
             <div id="level-10" class="level"> 
                 <h2 data-lang-key="l10_title"></h2> 
                 <p data-lang-key="l10_desc"></p> 
@@ -537,6 +544,7 @@
                 <div id="final-buttons"></div> 
             </div>
             
+            <!-- Win Screen -->
             <div id="win-screen" class="level screen"> 
                 <h2 data-lang-key="win_title"></h2> 
                 <p data-lang-key="win_desc"></p> 
@@ -547,6 +555,7 @@
             </div>
         </div>
 
+        <!-- === HARD MODE CONTAINER === -->
         <div class="hard-mode-container">
              <div id="hard-level-1" class="level"> 
                  <h2 data-lang-key="hl1_title"></h2> 
@@ -644,7 +653,14 @@
              </div>
         </div>
 
+        <!-- Floating Message Box -->
         <div id="message-box" class="message-box"></div>
+
+        <!-- NEW: Persistent Inventory Bar -->
+        <div id="inventory-bar" class="hidden-element">
+            <span style="font-size: 0.9em; color: var(--primary-color); font-weight: bold;">INVENTORY:</span>
+            <div id="inventory-items"></div>
+        </div>
     </div>
 <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -695,7 +711,7 @@
                     l6_msg_door_open: "门开了！",
                     l6_msg_wrong_password: "密码错误！",
                     l7_title: "第七关：碎片的记忆",
-                    l7_desc: "按正确的顺序拖拽碎片到虚线框内，拼凑起被遗忘的形状。", // Updated
+                    l7_desc: "按正确的顺序拖拽碎片到虚线框内，拼凑起被遗忘的形状。",
                     l7_clue_text: "你拼出了一个五角星的形状。",
                     l7_next_btn: "记住这个形状",
                     l7_msg_star_complete: "你拼好了一个五角星！",
@@ -791,7 +807,7 @@
                     l6_msg_door_open: "The door opened!",
                     l6_msg_wrong_password: "Wrong password!",
                     l7_title: "Level 7: Memory of Fragments",
-                    l7_desc: "Drag the fragments into the dashed box in the correct order to piece together the forgotten shape.", // Updated
+                    l7_desc: "Drag the fragments into the dashed box in the correct order to piece together the forgotten shape.",
                     l7_clue_text: "You've assembled a star shape.",
                     l7_next_btn: "Remember this shape",
                     l7_msg_star_complete: "You completed the star!",
@@ -851,7 +867,78 @@
             let loadedGameState = null;
             const messageBox = document.getElementById('message-box');
 
-            // --- 3. Core Functions ---
+            // --- 3. NEW: Audio Engine & Typewriter ---
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const audioCtx = new AudioContext();
+
+            function playSound(type) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                    gain.gain.setValueAtTime(0.3, now); // Softer click
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(554.37, now + 0.1); // C#
+                    osc.frequency.setValueAtTime(659.25, now + 0.2); // E
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.2, now + 0.05);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            }
+
+            function typeWriter(element, text, speed = 30) {
+                element.innerHTML = '';
+                let i = 0;
+                function type() {
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                        if (i % 3 === 0) playSound('click');
+                        setTimeout(type, speed);
+                    }
+                }
+                type();
+            }
+
+            // --- 4. NEW: Inventory System ---
+            function addItemToInventory(emoji, name) {
+                const invBar = document.getElementById('inventory-bar');
+                const invItems = document.getElementById('inventory-items');
+                invBar.classList.remove('hidden-element');
+                
+                const item = document.createElement('div');
+                item.className = 'inventory-item';
+                item.innerHTML = emoji;
+                item.title = name;
+                invItems.appendChild(item);
+                
+                playSound('success');
+                showMessage(`获得了物品 / Acquired: ${name}`, 2000);
+            }
+
+            // --- 5. Core Utility Functions ---
             function shuffle(array) {
                 const newArray = [...array];
                 for (let i = newArray.length - 1; i > 0; i--) {
@@ -885,6 +972,10 @@
                 };
                 clues.finalSequence = ['star', 'gem', 'book', 'key'];
                 gameState.clues = clues;
+                
+                // Reset Inventory UI
+                document.getElementById('inventory-items').innerHTML = '';
+                document.getElementById('inventory-bar').classList.add('hidden-element');
             }
 
             function getText(key, ...args) {
@@ -947,10 +1038,10 @@
             }
 
             function showMessage(key, duration = 2500, ...args) {
-                messageBox.textContent = getText(key, ...args);
-                messageBox.classList.add('show');
-                // Optional: Add pop-in animation to messages
-                messageBox.classList.add('pop-in');
+                // If the key exists in translations, use it. Otherwise, assume it's a direct string (like the inventory alert).
+                const messageText = translations[currentLang][key] ? getText(key, ...args) : key;
+                messageBox.textContent = messageText;
+                messageBox.classList.add('show', 'pop-in');
                 setTimeout(() => {
                     messageBox.classList.remove('show', 'pop-in');
                 }, duration);
@@ -968,6 +1059,7 @@
                     nextLevel = document.getElementById('win-screen');
                     localStorage.removeItem('puzzleGameState');
                     localStorage.setItem('mainGameCompleted', 'true');
+                    playSound('success'); // Play grand success sound
                 } else {
                     gameState.currentLevel = levelNumber;
                     nextLevel = document.getElementById(`level-${levelNumber}`);
@@ -984,10 +1076,10 @@
                 switchLanguage(currentLang);
             }
 
-            document.getElementById('lang-zh').addEventListener('click', () => switchLanguage('zh'));
-            document.getElementById('lang-en').addEventListener('click', () => switchLanguage('en'));
+            document.getElementById('lang-zh').addEventListener('click', () => { switchLanguage('zh'); playSound('click'); });
+            document.getElementById('lang-en').addEventListener('click', () => { switchLanguage('en'); playSound('click'); });
 
-            // --- 4. Main Menu Logic ---
+            // --- 6. Main Menu Logic ---
             const startScreen = document.getElementById('start-screen');
             const gameContainer = document.querySelector('.game-container');
             const hardModeContainer = document.querySelector('.hard-mode-container');
@@ -998,6 +1090,8 @@
             const restartHardBtn = document.getElementById('restart-hard-btn');
 
             newGameBtn.addEventListener('click', () => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                playSound('click');
                 if(startScreen) startScreen.style.display = 'none';
                 if(gameContainer) gameContainer.style.display = 'flex';
                 setupGame();
@@ -1005,6 +1099,8 @@
             });
 
             continueBtn.addEventListener('click', () => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                playSound('click');
                 if (loadedGameState) {
                     if(startScreen) startScreen.style.display = 'none';
                     if(gameContainer) gameContainer.style.display = 'flex';
@@ -1014,6 +1110,7 @@
             });
 
             function startChallengeSequence() {
+                playSound('click');
                 startScreen.style.display = 'none';
                 gameContainer.style.display = 'none';
                 hardModeContainer.style.display = 'flex';
@@ -1022,6 +1119,7 @@
             }
 
             function startSingleHardLevel(level) {
+                playSound('click');
                 startScreen.style.display = 'none';
                 gameContainer.style.display = 'none';
                 hardModeContainer.style.display = 'flex';
@@ -1030,6 +1128,7 @@
             }
 
             function startSingleMainLevel(level) {
+                playSound('click');
                 startScreen.style.display = 'none';
                 gameContainer.style.display = 'flex';
                 hardModeContainer.style.display = 'none';
@@ -1087,6 +1186,7 @@
                         }
                         if (godModeSequence.length === correctGodModeSequence.length) {
                             if (JSON.stringify(godModeSequence) === JSON.stringify(correctGodModeSequence)) {
+                                playSound('success');
                                 activateGodMode();
                             }
                             godModeSequence = [];
@@ -1122,13 +1222,20 @@
 
                 godModeContainer.classList.remove('hidden-element');
             }
-// --- 5. Main Game Level Logic (1-10) ---
+// --- 7. Main Game Level Logic (1-5) ---
+            
             window.initLevel1 = function() {
                 const space = document.getElementById('level-1-space');
                 space.innerHTML = ''; 
+                
+                // NEW: Typewriter Effect for description
+                const descEl = document.querySelector('#level-1 p');
+                typeWriter(descEl, getText('l1_desc')); 
+
                 let foundStars = 0;
                 const totalSpecialStars = gameState.clues.number;
 
+                // Background Stars
                 for (let i = 0; i < 100; i++) {
                     const star = document.createElement('div');
                     star.className = 'star';
@@ -1140,6 +1247,7 @@
                     space.appendChild(star);
                 }
 
+                // Special Clickable Stars
                 for (let i = 0; i < totalSpecialStars; i++) {
                     const star = document.createElement('div');
                     star.className = 'star special-star';
@@ -1148,25 +1256,34 @@
                     star.style.top = `${15 + Math.random() * 70}%`;
                     star.style.left = `${15 + Math.random() * 70}%`;
                     star.dataset.found = "false";
+                    
                     star.addEventListener('click', () => {
                         if (star.dataset.found === "false") {
+                            playSound('click'); // NEW: Sound effect
                             star.style.backgroundColor = 'var(--primary-color)';
                             star.dataset.found = "true";
                             foundStars++;
+                            
                             if (foundStars === totalSpecialStars) {
-                                showMessage('l1_msg_found', 3000, totalSpecialStars);
-                                const btn = document.getElementById('l1-next-btn');
-                                btn.classList.remove('hidden-element');
-                                btn.classList.add('pop-in');
+                                setTimeout(() => {
+                                    // NEW: Add to inventory instead of just showing text!
+                                    addItemToInventory('🔢', totalSpecialStars.toString());
+                                    const btn = document.getElementById('l1-next-btn');
+                                    btn.classList.remove('hidden-element');
+                                    btn.classList.add('pop-in');
+                                }, 500);
                             }
                         }
                     });
                     space.appendChild(star);
                 }
             }
-            document.getElementById('l1-next-btn').addEventListener('click', () => goToLevel(2));
+            document.getElementById('l1-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(2); });
 
             window.initLevel2 = function() {
+                const descEl = document.querySelector('#level-2 p');
+                typeWriter(descEl, getText('l2_desc')); // Typewriter effect
+
                 let currentHour = 12;
                 const hourHand = document.getElementById('hour-hand');
                 const minuteHand = document.getElementById('minute-hand');
@@ -1179,51 +1296,67 @@
                     timeDisplay.textContent = `${currentHour} : 00`;
 
                     if (currentHour === gameState.clues.number) {
-                        showMessage('l2_msg_ding');
-                        const clue = document.getElementById('l2-clue');
-                        clue.classList.remove('hidden-element');
-                        clue.classList.add('pop-in');
+                        setTimeout(() => {
+                            const colorName = translations[currentLang].colors[gameState.clues.color];
+                            addItemToInventory('💎', colorName); // NEW: Add Gem to inventory
+                            const clue = document.getElementById('l2-clue');
+                            clue.classList.remove('hidden-element');
+                            clue.classList.add('pop-in');
+                        }, 300);
                     }
                 }
 
                 document.getElementById('hour-up-btn').onclick = () => {
+                    playSound('click');
                     currentHour = (currentHour % 12) + 1;
                     updateClock();
                 };
                 document.getElementById('hour-down-btn').onclick = () => {
+                    playSound('click');
                     currentHour = (currentHour === 1) ? 12 : currentHour - 1;
                     updateClock();
                 };
                 updateClock();
             }
-            document.getElementById('l2-next-btn').addEventListener('click', () => goToLevel(3));
+            document.getElementById('l2-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(3); });
 
             window.initLevel3 = function() {
+                const descEl = document.querySelector('#level-3 p');
+                typeWriter(descEl, getText('l3_desc')); // Typewriter effect
+
                 document.querySelectorAll('.flower').forEach(flower => {
                     flower.onclick = (e) => {
                         if (e.target.dataset.color === gameState.clues.color) {
-                            showMessage('l3_msg_correct_flower');
+                            // NEW: Add directions to inventory
+                            addItemToInventory('🧭', gameState.clues.directionSymbols);
                             const clue = document.getElementById('l3-clue');
                             clue.classList.remove('hidden-element');
                             clue.classList.add('pop-in');
                         } else {
+                            playSound('error'); // NEW: Error buzzer
                             showMessage('l3_msg_wrong_flower');
+                            e.target.parentElement.classList.add('shake');
+                            setTimeout(() => e.target.parentElement.classList.remove('shake'), 500);
                         }
                     }
                 });
             }
-            document.getElementById('l3-next-btn').addEventListener('click', () => goToLevel(4));
+            document.getElementById('l3-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(4); });
 
+            // 🌟 LEVEL 4 REMASTERED: Dynamic Neon Maze 🌟
             window.initLevel4 = function() {
+                const descEl = document.querySelector('#level-4 p');
+                typeWriter(descEl, getText('l4_desc')); 
+
                 const mazeContainer = document.getElementById('maze-container');
-                const size = 9; // Creates a 9x9 grid
-                const center = 4; // Start in the dead center
+                const size = 9; // 9x9 grid
+                const center = 4; // Start in middle
                 
-                // 1. Generate a solid block of walls
+                // Generate solid walls
                 let layout = Array(size).fill(0).map(() => Array(size).fill(1));
-                layout[center][center] = 0; // Clear the starting spot
+                layout[center][center] = 0; 
                 
-                // 2. Carve the EXACT path required to win based on Level 3 Clues
+                // Carve the EXACT path based on the player's unique secret sequence
                 let carveX = center, carveY = center;
                 gameState.clues.directions.forEach(dir => {
                     if (dir === 'ArrowUp') carveY--;
@@ -1231,11 +1364,11 @@
                     if (dir === 'ArrowLeft') carveX--;
                     if (dir === 'ArrowRight') carveX++;
                     if(carveY >= 0 && carveY < size && carveX >= 0 && carveX < size) {
-                        layout[carveY][carveX] = 0; // Make it a valid path
+                        layout[carveY][carveX] = 0; 
                     }
                 });
 
-                // 3. Add some random fake branches to make it look like a real maze
+                // Add fake branches
                 for (let i = 0; i < 20; i++) {
                     let rx = Math.floor(Math.random() * (size - 2)) + 1;
                     let ry = Math.floor(Math.random() * (size - 2)) + 1;
@@ -1247,7 +1380,6 @@
 
                 function renderMaze() {
                     mazeContainer.innerHTML = '';
-                    // Set grid columns and rows dynamically via JS
                     mazeContainer.style.gridTemplateColumns = `repeat(${size}, 32px)`;
                     mazeContainer.style.gridTemplateRows = `repeat(${size}, 32px)`;
                     
@@ -1258,7 +1390,7 @@
                             if (layout[y][x] === 1) cell.classList.add('maze-wall');
                             else cell.classList.add('maze-path');
                             
-                            // Place the glowing circular player
+                            // Place the glowing player
                             if (x === playerX && y === playerY) {
                                 const player = document.createElement('div');
                                 player.className = 'maze-player';
@@ -1278,8 +1410,8 @@
                     if (key === 'ArrowLeft') nx--;
                     if (key === 'ArrowRight') nx++;
                     
-                    // Check if the move is inside the grid AND not a wall
                     if (nx >= 0 && nx < size && ny >= 0 && ny < size && layout[ny][nx] === 0) {
+                        playSound('click'); // Soft step sound
                         playerX = nx;
                         playerY = ny;
                         
@@ -1288,31 +1420,36 @@
                         
                         renderMaze();
                         
-                        // Check Win Condition
                         if (JSON.stringify(moveSequence) === JSON.stringify(gameState.clues.directions)) {
-                            showMessage('l4_msg_correct_path');
+                            // NEW: Add Book to inventory!
+                            addItemToInventory('📖', 'Ancient Book');
                             const clue = document.getElementById('l4-clue');
                             clue.classList.remove('hidden-element');
                             clue.classList.add('pop-in');
                             document.removeEventListener('keydown', handleKey);
                         }
                     } else {
-                        // Hit a wall! Trigger the shake animation
+                        // Bumped into a wall
+                        playSound('error');
                         mazeContainer.classList.remove('shake');
-                        void mazeContainer.offsetWidth; // Force a CSS reflow
+                        void mazeContainer.offsetWidth; // Force CSS reflow
                         mazeContainer.classList.add('shake');
                     }
                 }
 
-                const handleKey = (e) => processMove(e.key);
+                const handleKey = (e) => {
+                    // Prevent screen scrolling when using arrow keys
+                    if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                        e.preventDefault();
+                        processMove(e.key);
+                    }
+                };
 
-                // Button Support
                 document.getElementById('maze-up').onclick = () => processMove('ArrowUp');
                 document.getElementById('maze-down').onclick = () => processMove('ArrowDown');
                 document.getElementById('maze-left').onclick = () => processMove('ArrowLeft');
                 document.getElementById('maze-right').onclick = () => processMove('ArrowRight');
 
-                // Keyboard Support
                 document.addEventListener('keydown', handleKey);
                 
                 const observer = new MutationObserver(() => {
@@ -1323,43 +1460,56 @@
                 });
                 observer.observe(document.getElementById('level-4'), { attributes: true, subtree: false });
                 
-                // Initial Render
                 renderMaze();
             }
+            document.getElementById('l4-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(5); });
 
             window.initLevel5 = function() {
+                const descEl = document.querySelector('#level-5 p');
+                typeWriter(descEl, getText('l5_desc')); // Typewriter effect
+
                 const level5 = document.getElementById('level-5');
                 const book = document.getElementById('book');
                 const bookClue = document.getElementById('book-clue');
                 const nextBtn = document.getElementById('l5-next-btn');
 
                 document.getElementById('light-switch').onclick = () => {
+                    playSound('click');
                     level5.classList.toggle('dark');
-                    showMessage(level5.classList.contains('dark') ? 'l5_msg_dark' : 'l5_msg_light');
+                    showMessage(level5.classList.contains('dark') ? 'l5_msg_dark' : 'l5_msg_light', 1500);
                 };
 
                 book.onclick = () => {
                     if (level5.classList.contains('dark')) {
+                        // NEW: Add password to inventory
+                        addItemToInventory('📝', gameState.clues.password);
                         const clue = document.getElementById('l5-clue');
                         clue.classList.remove('hidden-element');
                         clue.classList.add('pop-in');
                         bookClue.textContent = gameState.clues.password;
                         nextBtn.classList.remove('hidden-element');
                     } else {
+                        playSound('error');
                         showMessage('l5_msg_too_bright');
                     }
                 };
             }
-            document.getElementById('l5-next-btn').addEventListener('click', () => goToLevel(6));
+            document.getElementById('l5-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(6); });
+        window.initLevel6 = function() {
+                const descEl = document.querySelector('#level-6 p');
+                typeWriter(descEl, getText('l6_desc')); // Typewriter effect
 
-            window.initLevel6 = function() {
                 document.getElementById('submit-password-btn').onclick = () => {
                     const input = document.getElementById('password-input').value;
                     const level6Container = document.getElementById('level-6');
+                    
                     if (input.toUpperCase() === gameState.clues.password) {
+                        playSound('success');
                         showMessage('l6_msg_door_open');
-                        goToLevel(7);
+                        addItemToInventory('🗝️', 'Mystic Key'); // NEW: Add key to inventory
+                        setTimeout(() => goToLevel(7), 1500); // Small delay to enjoy success sound
                     } else {
+                        playSound('error');
                         showMessage('l6_msg_wrong_password');
                         level6Container.classList.add('shake');
                         setTimeout(() => level6Container.classList.remove('shake'), 500);
@@ -1367,20 +1517,21 @@
                 };
             }
 
-            // --- 🌟 LEVEL 7 REMASTERED: Drag & Drop Logic 🌟 ---
+            // 🌟 LEVEL 7 REMASTERED: Drag & Drop Logic 🌟
             window.initLevel7 = function() {
+                const descEl = document.querySelector('#level-7 p');
+                typeWriter(descEl, getText('l7_desc')); // Typewriter effect
+
                 const workspace = document.getElementById('level-7-workspace');
                 const container = document.getElementById('fragments-container');
                 const dropZone = document.getElementById('fragment-drop-zone');
                 
-                // Clear state
                 container.innerHTML = '';
                 dropZone.innerHTML = '';
                 
                 const correctOrder = gameState.clues.fragmentOrder;
                 let droppedOrder = [];
                 
-                // Generate Fragments
                 function createFragments() {
                     container.innerHTML = '';
                     const fragments = Array(5).fill(0).map((_, i) => {
@@ -1388,15 +1539,14 @@
                         frag.className = 'fragment';
                         frag.textContent = i + 1;
                         frag.dataset.id = i;
-                        frag.draggable = true; // Make HTML5 Draggable
+                        frag.draggable = true; 
                         
-                        // Drag Start
                         frag.addEventListener('dragstart', (e) => {
+                            playSound('click'); // Play click when picking it up
                             e.dataTransfer.setData('text/plain', frag.dataset.id);
                             setTimeout(() => frag.classList.add('dragging'), 0);
                         });
                         
-                        // Drag End
                         frag.addEventListener('dragend', () => {
                             frag.classList.remove('dragging');
                         });
@@ -1408,7 +1558,6 @@
                 
                 createFragments();
                 
-                // Drop Zone Setup
                 dropZone.ondragover = (e) => {
                     e.preventDefault(); 
                     dropZone.classList.add('drag-over');
@@ -1428,22 +1577,24 @@
                     const draggedFrag = document.querySelector(`.fragment[data-id="${fragId}"]`);
                     
                     if (draggedFrag && draggedFrag.parentElement === container) {
-                        // Check if sequence is correct
                         if (parseInt(fragId) === correctOrder[droppedOrder.length]) {
-                            // Correct!
+                            // Correct Placement
+                            playSound('click'); // Satisfying clack
                             droppedOrder.push(parseInt(fragId));
                             draggedFrag.classList.add('correct');
                             draggedFrag.draggable = false; 
                             dropZone.appendChild(draggedFrag); 
                             
                             if (droppedOrder.length === correctOrder.length) {
-                                showMessage('l7_msg_star_complete');
+                                // NEW: Add Star Shape to Inventory
+                                addItemToInventory('⭐', 'Glowing Star');
                                 const clue = document.getElementById('l7-clue');
                                 clue.classList.remove('hidden-element');
                                 clue.classList.add('pop-in'); 
                             }
                         } else {
-                            // Wrong! Trigger shake
+                            // Wrong Placement
+                            playSound('error');
                             showMessage('l7_msg_wrong_order');
                             workspace.classList.add('shake');
                             setTimeout(() => workspace.classList.remove('shake'), 500);
@@ -1455,9 +1606,12 @@
                     }
                 };
             }
-            document.getElementById('l7-next-btn').addEventListener('click', () => goToLevel(8));
+            document.getElementById('l7-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(8); });
 
             window.initLevel8 = function() {
+                const descEl = document.querySelector('#level-8 p');
+                typeWriter(descEl, getText('l8_desc'));
+
                 const canvasContainer = document.getElementById('wall-canvas');
                 const canvas = document.getElementById('drawing-canvas');
                 const ctx = canvas.getContext('2d');
@@ -1485,6 +1639,7 @@
 
                     pointEl.onclick = () => {
                         if (parseInt(pointEl.dataset.index) === clickedPoints) {
+                            playSound('click'); // Play sound on point connect
                             pointEl.classList.add('clicked');
                             if (lastPoint) {
                                 ctx.beginPath();
@@ -1499,21 +1654,29 @@
                                 ctx.moveTo(lastPoint.x, lastPoint.y);
                                 ctx.lineTo(points[0].x, points[0].y);
                                 ctx.stroke();
-                                showMessage('l8_msg_star_drawn');
+                                
+                                // NEW: Add coordinates to Inventory
+                                const coordsText = `X:${gameState.clues.coords.x}, Y:${gameState.clues.coords.y}`;
+                                addItemToInventory('🗺️', coordsText);
+                                
                                 const clue = document.getElementById('l8-clue');
                                 clue.classList.remove('hidden-element');
                                 clue.classList.add('pop-in');
                             }
                         } else {
+                            playSound('error');
                             showMessage('l8_msg_click_order');
                         }
                     };
                     canvasContainer.appendChild(pointEl);
                 });
             }
-            document.getElementById('l8-next-btn').addEventListener('click', () => goToLevel(9));
+            document.getElementById('l8-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(9); });
 
             window.initLevel9 = function() {
+                const descEl = document.querySelector('#level-9 p');
+                typeWriter(descEl, getText('l9_desc'));
+
                 const map = document.getElementById('map-container');
                 const spot = document.getElementById('treasure-spot');
                 map.innerHTML = '';
@@ -1534,21 +1697,26 @@
                     const distance = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
 
                     if (distance < 45) { 
-                        showMessage('l9_msg_found_spot');
+                        // NEW: Add a small treasure chest to inventory
+                        addItemToInventory('🏆', 'Golden Chest');
                         map.innerHTML = '<div id="chest-image">💎</div>';
                         const clue = document.getElementById('l9-clue');
                         clue.classList.remove('hidden-element');
                         clue.classList.add('pop-in');
                     } else {
+                        playSound('error');
                         const scaledX = Math.round((x / map.clientWidth) * 400);
                         const scaledY = Math.round((y / map.clientHeight) * 300);
                         showMessage('l9_msg_wrong_spot', 2000, {x: scaledX, y: scaledY});
                     }
                 };
             }
-            document.getElementById('l9-next-btn').addEventListener('click', () => goToLevel(10));
+            document.getElementById('l9-next-btn').addEventListener('click', () => { playSound('click'); goToLevel(10); });
 
             window.initLevel10 = function() {
+                const descEl = document.querySelector('#level-10 p');
+                typeWriter(descEl, getText('l10_desc'));
+
                 const correctSequence = gameState.clues.finalSequence;
                 let playerSequence = [];
                 const buttonsContainer = document.getElementById('final-buttons');
@@ -1577,6 +1745,7 @@
                     Object.assign(button.style, data.style);
 
                     button.onclick = () => {
+                        playSound('click'); // Click sound on every button press
                         playerSequence.push(button.dataset.key);
                         button.style.transform = 'scale(0.85)';
                         setTimeout(() => button.style.transform = 'scale(1)', 150);
@@ -1586,6 +1755,7 @@
                                 showMessage('l10_msg_chest_open', 3000);
                                 goToLevel('win');
                             } else {
+                                playSound('error'); // Error sound
                                 showMessage('l10_msg_wrong_sequence');
                                 document.getElementById('level-10').classList.add('shake');
                                 setTimeout(() => document.getElementById('level-10').classList.remove('shake'), 500);
@@ -1596,9 +1766,9 @@
                     buttonsContainer.appendChild(button);
                 });
             }
-
-            // --- 6. Hard Mode Logic ---
+// --- 8. Hard Mode Logic ---
             function startHardMode() {
+                playSound('click');
                 hardGameState.currentLevel = 1;
                 hardGameState.lives = 1;
                 hardGameState.data = {};
@@ -1613,6 +1783,7 @@
                 if (levelNumber > 7) {
                     nextLevel = document.getElementById('hard-win-screen');
                     localStorage.setItem('hardModeCompleted', 'true');
+                    playSound('success'); // Grand success for beating hard mode!
                 } else {
                     nextLevel = document.getElementById(`hard-level-${levelNumber}`);
                 }
@@ -1628,6 +1799,7 @@
             }
 
             function handleHardModeWrongAnswer() {
+                playSound('error');
                 if (hardGameState.isSingleLevelMode) {
                     goToHardGameOver(true);
                     return;
@@ -1636,18 +1808,19 @@
                 if (hardGameState.lives < 0) {
                     goToHardGameOver(false);
                 } else {
-                    showMessage("回答错误！", 2000);
+                    showMessage("回答错误！/ Wrong Answer!", 2000);
                     goToHardGameOver(false);
                 }
             }
 
             function goToHardGameOver(isSingleMode) {
+                playSound('error');
                 document.querySelectorAll('.hard-mode-container .level').forEach(l => l.classList.remove('active'));
                 const gameOverScreen = isSingleMode ? document.getElementById('single-level-complete') : document.getElementById('hard-game-over');
                 gameOverScreen.classList.add('active');
             }
 
-            window.initHardLevel1 = function() { 
+            window.initHardLevel1 = function() { // Tetris
                 const canvas = document.getElementById('tetris-canvas');
                 const context = canvas.getContext('2d');
                 const scoreElement = document.getElementById('tetris-score');
@@ -1717,7 +1890,7 @@
                         drawMatrix(nextContext, nextPiece.shape, offset, nextPiece.color);
                     }
                 }
-                 function drawHeldPiece() {
+                function drawHeldPiece() {
                     holdContext.clearRect(0, 0, 4, 4);
                     if (heldPiece) {
                         const offset = { x: (4 - heldPiece.shape[0].length) / 2, y: (4 - heldPiece.shape.length) / 2 };
@@ -1784,6 +1957,7 @@
                         }
                     }
                     piece.shape = rotated;
+                    playSound('click');
                 }
 
                 function pieceDrop() {
@@ -1808,6 +1982,7 @@
                     newPiece();
                     canHold = true;
                     dropCounter = 0;
+                    playSound('click');
                 }
 
                 function holdPiece() {
@@ -1822,6 +1997,7 @@
                     }
                     canHold = false;
                     drawHeldPiece();
+                    playSound('click');
                 }
 
                 function pieceMove(dir) {
@@ -1842,6 +2018,7 @@
                         clearedLines++;
                     }
                     if (clearedLines > 0) {
+                        playSound('success'); // Happy sound for clearing lines
                         let baseScore = clearedLines === 4 ? 5 : clearedLines;
                         score += baseScore + combo;
                         combo++;
@@ -1858,8 +2035,10 @@
                     draw();
                     if(scoreElement) scoreElement.textContent = score;
                     if(comboElement) comboElement.textContent = combo;
+                    
                     if (score >= 50) {
                         cancelAnimationFrame(animationFrameId);
+                        playSound('success');
                         if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } 
                         else { goToHardLevel(2); }
                         return;
@@ -1872,7 +2051,7 @@
                     if (e.code === 'ArrowLeft') pieceMove(-1);
                     else if (e.code === 'ArrowRight') pieceMove(1);
                     else if (e.code === 'ArrowDown') pieceDrop();
-                    else if (e.code === 'ArrowUp') pieceRotate();
+                    else if (e.code === 'ArrowUp') { e.preventDefault(); pieceRotate(); }
                     else if (e.code === 'Space') { e.preventDefault(); pieceHardDrop(); } 
                     else if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') { holdPiece(); }
                 };
@@ -1903,13 +2082,13 @@
                 const questionElement = document.querySelector('#hard-level-2 p');
                 optionsContainer.innerHTML = '';
 
-                const questionIndex = Math.floor(Math.random() * 5); 
+                const questionIndex = Math.floor(Math.random() * Math.min(5, hardGameState.data.tetrisHistory.length)); 
                 const questionNumber = questionIndex + 1;
                 hardGameState.data.memoryQuestionNumber = questionNumber;
 
                 questionElement.innerHTML = getText('hl2_desc', questionNumber);
 
-                const correctColor = hardGameState.data.tetrisHistory[questionIndex];
+                const correctColor = hardGameState.data.tetrisHistory[questionIndex] || 'cyan'; // Fallback
                 const allColors = ['cyan', 'yellow', 'purple', 'green', 'red', 'blue', 'orange'];
                 const distractors = shuffle(allColors.filter(c => c !== correctColor)).slice(0, 3);
                 const options = shuffle([correctColor, ...distractors]);
@@ -1922,12 +2101,16 @@
                     btn.style.backgroundColor = color;
                     btn.onclick = () => {
                         if (color === correctColor) {
+                            playSound('success');
                             if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } 
                             else { goToHardLevel(3); }
                         } else {
                             chances--;
                             btn.disabled = true;
-                            if (chances > 0) { showMessage("hl2_wrong_1_chance", 1500); } 
+                            if (chances > 0) { 
+                                playSound('error');
+                                showMessage("hl2_wrong_1_chance", 1500); 
+                            } 
                             else { handleHardModeWrongAnswer(); }
                         }
                     };
@@ -1935,7 +2118,7 @@
                 });
             };
             
-            window.initHardLevel3 = function() { 
+            window.initHardLevel3 = function() { // Jigsaw
                 const wrapper = document.getElementById('jigsaw-wrapper');
                 wrapper.innerHTML = '<div id="jigsaw-board"></div><div id="jigsaw-pieces"></div>';
                 const board = document.getElementById('jigsaw-board');
@@ -1988,6 +2171,7 @@
 
                     piecesContainer.addEventListener('dragstart', (e) => {
                         if (e.target.classList.contains('jigsaw-piece')) {
+                            playSound('click');
                             draggedPiece = e.target;
                             setTimeout(() => e.target.classList.add('dragging'), 0);
                         }
@@ -2006,12 +2190,14 @@
                         e.preventDefault();
                         if (e.target.classList.contains('jigsaw-slot') && !e.target.hasChildNodes()) {
                             if (draggedPiece && e.target.dataset.index === draggedPiece.dataset.index) {
+                                playSound('click');
                                 e.target.appendChild(draggedPiece);
                                 draggedPiece.draggable = false;
                                 draggedPiece.style.cursor = 'default';
                                 e.target.classList.add('dropped');
                                 placedCount++;
                                 if (placedCount === size * size) {
+                                    playSound('success');
                                     if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } 
                                     else { setTimeout(() => goToHardLevel(4), 500); }
                                 }
@@ -2031,6 +2217,8 @@
                 ctx.font = '20px Quicksand';
                 ctx.textAlign = 'center';
                 ctx.fillText("Bubble Shooter - Auto Pass for Demo", canvas.width / 2, canvas.height / 2);
+                
+                playSound('success');
                 setTimeout(() => { if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } else { goToHardLevel(5); } }, 2000);
             };
             
@@ -2048,6 +2236,7 @@
                     btn.style.backgroundColor = color;
                     btn.onclick = () => {
                         if (color === correctColor) {
+                            playSound('success');
                             if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } 
                             else { goToHardLevel(6); }
                         } else {
@@ -2058,7 +2247,7 @@
                 });
             };
             
-            window.initHardLevel6 = function() { 
+            window.initHardLevel6 = function() { // Reaction
                 const box = document.getElementById('reaction-box');
                 const target = document.getElementById('reaction-target');
                 const countdownEl = document.getElementById('reaction-countdown');
@@ -2074,10 +2263,12 @@
 
                 function countdown(count) {
                     if (count > 0) {
+                        playSound('click');
                         countdownEl.textContent = count;
                         countdownEl.style.display = 'block';
                         setTimeout(() => countdown(count - 1), 1000);
                     } else {
+                        playSound('success');
                         startReactionGame();
                     }
                 }
@@ -2095,6 +2286,7 @@
 
                     timeoutId = setTimeout(() => {
                         misses++;
+                        playSound('error');
                         if(missesEl) missesEl.textContent = misses;
                         if (misses >= 2) {
                             clearTimeout(timeoutId);
@@ -2107,10 +2299,12 @@
 
                 target.onclick = () => {
                     score++;
+                    playSound('click');
                     if(scoreEl) scoreEl.textContent = score;
                     target.style.display = 'none';
                     clearTimeout(timeoutId);
                     if (score >= 20) {
+                        playSound('success');
                         if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } 
                         else { goToHardLevel(7); }
                     } else {
@@ -2135,6 +2329,7 @@
                     btn.textContent = i;
                     btn.onclick = () => {
                         if (i === luckyNumber) {
+                            playSound('success');
                             if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } 
                             else { goToHardLevel(8); }
                         } else {
@@ -2143,7 +2338,8 @@
                             if (chances <= 0) {
                                 goToHardGameOver(hardGameState.isSingleLevelMode);
                             } else {
-                                showMessage("不对，还有一次机会！", 1500);
+                                playSound('error');
+                                showMessage("不对，还有一次机会！/ Incorrect, 1 chance left!", 1500);
                             }
                         }
                     };
@@ -2156,4 +2352,4 @@
         });
     </script>
 </body>
-</html>
+</html>        

@@ -1405,7 +1405,7 @@
                 switchLanguage(currentLang);
             }
 
-            function activateGodMode() {
+function activateGodMode() {
                 const godModeContainer = document.getElementById('god-mode-select-container');
                 const godMainLevels = document.getElementById('god-main-levels');
                 const godHardLevels = document.getElementById('god-hard-levels');
@@ -1413,7 +1413,8 @@
                 godMainLevels.innerHTML = '<h4>Main Levels</h4>';
                 godHardLevels.innerHTML = '<h4>Hard Levels</h4>';
 
-                for (let i = 1; i <= 10; i++) {
+                // FIX: Changed from 10 to 15 to include the Inner Sanctum levels!
+                for (let i = 1; i <= 15; i++) {
                     const btn = document.createElement('button');
                     btn.textContent = `Lvl ${i}`;
                     btn.onclick = () => startSingleMainLevel(i);
@@ -1429,8 +1430,8 @@
 
                 godModeContainer.classList.remove('hidden-element');
             }
-// --- 7. Main Game Level Logic (1-5) ---
             
+            // --- 7. Main Game Level Logic (1-5) ---      
             window.initLevel1 = function() {
                 const space = document.getElementById('level-1-space');
                 space.innerHTML = ''; 

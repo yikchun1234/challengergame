@@ -35,27 +35,32 @@
             padding: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            /* FIX: Use dvh for mobile address bars */
-            height: 100dvh; 
+            align-items: flex-start; /* FIX: Prevents the top from getting cut off */
+            min-height: 100dvh; /* Let it grow to fill the screen */
             text-align: center;
-            overflow: hidden;
             
-            /* FIX: Stop "pull to refresh" and screen bouncing on mobile */
-            overscroll-behavior: none;
-            touch-action: none; 
+            /* FIX: Restore vertical scrolling! */
+            overflow-x: hidden;
+            overflow-y: auto; 
+            overscroll-behavior-y: none; /* Keeps "pull-to-refresh" disabled */
+            touch-action: pan-y; /* Restores finger swiping up and down! */
         }
 
         /* --- 2. Layout & Containers --- */
         .game-wrapper {
             width: 100vw;
-            height: 100vh;
+            min-height: 100dvh; /* FIX: Changed from fixed height so it can stretch */
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            /* FIX: Added extra padding to the top and bottom so buttons are never hidden */
+            padding: 40px 20px 120px 20px; 
+        }
+        
+        /* Add margin: auto to fix centering on tall screens */
+        .screen, .game-container, .hard-mode-container {
+            margin: auto 0;
         }
 
         /* Fixed Centering Issue Here */

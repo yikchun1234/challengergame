@@ -1069,11 +1069,15 @@
                 if (nextLevel) {
                     nextLevel.classList.add('active');
                 }
+                
+                // FIX: Run the language translation FIRST
+                switchLanguage(currentLang);
+                
+                // FIX: Run the level logic and typewriter SECOND
                 const initFunction = window[`initLevel${levelNumber}`];
                 if (typeof initFunction === 'function') {
                     initFunction();
                 }
-                switchLanguage(currentLang);
             }
 
             document.getElementById('lang-zh').addEventListener('click', () => { switchLanguage('zh'); playSound('click'); });
@@ -1230,7 +1234,8 @@
                 
                 // NEW: Typewriter Effect for description
                 const descEl = document.querySelector('#level-1 p');
-                typeWriter(descEl, getText('l1_desc')); 
+                // New Line:
+                typeWriter(descEl, getText('l1_desc', gameState.clues.number));
 
                 let foundStars = 0;
                 const totalSpecialStars = gameState.clues.number;

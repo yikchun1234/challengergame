@@ -1,0 +1,1802 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态解谜游戏 (Dynamic Puzzle Game)</title>
+    <style>
+        /* 全局样式 */
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&family=ZCOOL+QingKe+HuangYou&display=swap');
+
+        :root {
+            --primary-color: #fca311;
+            --dark-bg: #16213e;
+            --darker-bg: #1a1a2e;
+        }
+
+        body {
+            font-family: 'Quicksand', 'ZCOOL QingKe HuangYou', sans-serif;
+            background-color: var(--darker-bg);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .game-wrapper {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #start-screen h1 {
+            font-size: 3em;
+            color: var(--primary-color);
+            margin-bottom: 40px;
+        }
+        #start-screen h1 span {
+            cursor: pointer;
+        }
+
+        #start-screen button, #win-screen button, #hard-game-over button, #hard-win-screen button, #single-level-complete button {
+            width: 200px;
+            padding: 15px 0;
+            font-size: 1.5em;
+        }
+
+        #continue-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .game-container, .hard-mode-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none; /* Initially hidden */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #lang-switcher {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        #lang-switcher button {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            margin-left: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-family: 'Quicksand', 'ZCOOL QingKe HuangYou', sans-serif;
+        }
+
+        #lang-switcher button.active {
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+        }
+
+        .level {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease-in-out, visibility 0.8s;
+        }
+
+        .level.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        h2 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            max-width: 90%;
+            line-height: 1.6;
+        }
+
+        button, input[type="text"] {
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+            font-family: 'Quicksand', 'ZCOOL QingKe HuangYou', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #e85d04;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .message-box {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        .message-box.show {
+            opacity: 1;
+        }
+
+        .hidden-element {
+            display: none;
+        }
+
+        /* --- 关卡 1: 星空 --- */
+        #level-1-space { width: 100%; height: 70%; position: relative; border: 1px solid #4a4e69; border-radius: 15px; background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%); }
+        .star { position: absolute; background-color: white; border-radius: 50%; animation: twinkle 2s infinite ease-in-out; }
+        .special-star { cursor: pointer; animation: special-twinkle 0.8s infinite ease-in-out; box-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color); }
+        @keyframes twinkle { 50% { opacity: 0.5; } }
+        @keyframes special-twinkle { 50% { transform: scale(1.5); opacity: 0.7; } }
+
+        /* --- 关卡 2: 时钟 --- */
+        #clock-container { width: 200px; height: 200px; border: 8px solid #8d6e63; border-radius: 50%; position: relative; background-color: #efebe9; }
+        #hour-hand, #minute-hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom; background-color: #3e2723; border-radius: 4px; }
+        #hour-hand { width: 6px; height: 50px; }
+        #minute-hand { width: 4px; height: 70px; }
+        #clock-controls { margin-top: 20px; }
+        #clock-controls button { margin: 0 5px; }
+        #time-display { font-size: 1.5em; color: var(--primary-color); margin-top: 10px; }
+
+        /* --- 关卡 3: 花园 --- */
+        #garden { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .flower { width: 60px; height: 60px; border-radius: 50%; cursor: pointer; transition: transform 0.3s; }
+        .flower:hover { transform: scale(1.1); }
+
+        /* --- 关卡 4: 迷宫 --- */
+        #maze-container { display: grid; grid-template-columns: repeat(5, 40px); grid-template-rows: repeat(5, 40px); border: 2px solid var(--primary-color); }
+        .maze-cell { width: 40px; height: 40px; background-color: var(--dark-bg); }
+        .maze-wall { background-color: #4a4e69; }
+        .maze-player { background-color: var(--primary-color); border-radius: 50%; }
+        .maze-path { background-color: #0f3460; }
+        #maze-controls { margin-top: 10px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        #maze-controls .d-pad-row { display: flex; gap: 3px; }
+        .maze-btn { width: 45px; height: 45px; font-size: 1.5em; padding: 0; line-height: 45px; }
+        #l4-clue p { white-space: nowrap; }
+
+        /* --- 关卡 5: 书与开关 --- */
+        #level-5.dark { background-color: #000; }
+        #light-switch { width: 50px; height: 50px; border-radius: 50%; position: absolute; top: 20px; right: 20px; cursor: pointer; background-color: #ffff00; border: 2px solid var(--primary-color); }
+        #level-5.dark #light-switch { background-color: #6c757d; }
+        #book { width: 150px; height: 200px; background-color: #8d6e63; border-radius: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 2em; color: #efebe9; }
+        #book-clue { color: var(--primary-color); font-size: 3em; font-weight: bold; }
+
+        /* --- 关卡 6: 密码门 --- */
+        #door { width: 150px; height: 250px; background-color: #5d4037; border: 10px solid #3e2723; border-radius: 5px; margin-bottom: 20px; }
+        #password-input { width: 200px; text-align: center; margin-right: 10px; }
+
+        /* --- 关卡 7: 碎片 --- */
+        #fragments-container { display: flex; gap: 10px; }
+        .fragment { width: 50px; height: 50px; background-color: #adb5bd; border: 2px solid #6c757d; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.5em; }
+        .fragment.correct { background-color: var(--primary-color); transform: scale(1.1); }
+
+        /* --- 关卡 8: 光影的轨迹 --- */
+        #wall-canvas { width: 400px; height: 300px; background-color: #495057; border-radius: 10px; cursor: crosshair; position: relative; }
+        .star-point { position: absolute; width: 15px; height: 15px; background-color: rgba(255, 255, 255, 0.5); border-radius: 50%; cursor: pointer; }
+        .star-point.clicked { background-color: var(--primary-color); }
+
+        /* --- 关卡 9: 藏宝图 --- */
+        #map-container { width: 90%; height: 80%; background-image: url('https://placehold.co/720x480/A98B74/3E2723?text=古老的藏宝图'); background-size: cover; background-position: center; border: 5px solid #8d6e63; border-radius: 10px; cursor: pointer; position: relative; }
+        #treasure-spot { position: absolute; width: 30px; height: 30px; background-color: red; border-radius: 50%; opacity: 0; }
+        #chest-image { width: 80px; height: 80px; background-color: var(--primary-color); border: 3px solid #e85d04; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 3em; }
+
+        /* --- 关卡 10: 最终的宝箱 --- */
+        #final-chest { width: 200px; height: 150px; background-color: #a67c52; border: 10px solid #5d4037; border-radius: 10px; margin-bottom: 20px; }
+        #final-buttons { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        .final-button { width: 50px; height: 50px; font-size: 2em; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: none; }
+
+        /* --- 通关画面 --- */
+        #win-screen, #hard-game-over, #hard-win-screen, #single-level-complete { background: var(--darker-bg); }
+        #win-screen h2, #hard-game-over h2, #hard-win-screen h2, #single-level-complete h2 { color: var(--primary-color); font-size: 3em; }
+        #win-screen p, #hard-game-over p, #hard-win-screen p, #single-level-complete p { color: #e0e0e0; }
+        .win-buttons { display: flex; gap: 20px; }
+
+        /* --- 挑战模式 --- */
+        .hard-level-container { width: 100%; height: 100%; }
+        #hard-level-1-container { display: flex; flex-direction: column; gap: 10px; align-items: center;}
+        #tetris-game-area { display: flex; gap: 20px; align-items: flex-start; justify-content: center; }
+        #tetris-canvas { background-color: #000; border: 2px solid var(--primary-color); }
+        #tetris-info { text-align: left; }
+        #tetris-info p { margin: 5px 0; font-size: 1.2em;}
+        #next-piece-canvas, #hold-piece-canvas { background-color: #000; border: 1px solid #555; }
+        #tetris-controls { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 10px; }
+        #tetris-controls .d-pad-row { display: flex; gap: 5px; }
+        .tetris-btn { width: 60px; height: 60px; font-size: 2em; padding: 0; }
+
+        #hard-level-2-options, #hard-level-5-options { display: flex; gap: 10px; }
+        .color-option-btn { width: 80px; height: 80px; border-radius: 10px; }
+        .color-option-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        #jigsaw-wrapper { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        #jigsaw-board { display: grid; border: 2px solid var(--primary-color); background-color: #000; padding: 2px; }
+        .jigsaw-slot { border: 1px dashed #555; box-sizing: border-box; }
+        .jigsaw-slot.dropped { border: 1px solid var(--primary-color); }
+        #jigsaw-pieces { display: flex; flex-wrap: wrap; gap: 5px; border: 2px solid #555; padding: 5px; min-height: 115px; margin-top: 10px; justify-content: center; }
+        .jigsaw-piece { cursor: grab; }
+        .jigsaw-piece.dragging { opacity: 0.5; }
+
+        #bubble-shooter-canvas { border: 2px solid var(--primary-color); cursor: pointer; }
+
+        #reaction-box { width: 400px; height: 300px; background-color: #333; border: 2px solid var(--primary-color); position: relative; cursor: crosshair; }
+        #reaction-target { position: absolute; display: none; cursor: pointer; }
+        #reaction-countdown { font-size: 5em; color: var(--primary-color); position: absolute; z-index: 10; text-shadow: 2px 2px 4px #000; }
+
+        #luck-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .luck-btn { width: 60px; height: 60px; font-size: 1.5em; }
+
+        #hard-level-select-container, #god-mode-select-container {
+            border-top: 2px solid var(--primary-color);
+            margin-top: 20px;
+            padding-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        #hard-level-select-container button, #god-mode-select-container button {
+            width: auto;
+            font-size: 1em;
+            padding: 8px 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5em; }
+            h2 { font-size: 1.8em; }
+            p { font-size: 1em; }
+            #jigsaw-wrapper {
+                width: 100%;
+                overflow-x: hidden;
+            }
+        }
+
+        @media (max-width: 480px) {
+             .game-wrapper {
+                height: 95vh;
+             }
+            #start-screen h1 { font-size: 2em; }
+            #start-screen button, #win-screen button, #hard-game-over button, #hard-win-screen button {
+                width: 180px;
+                font-size: 1.2em;
+            }
+            h2 { font-size: 1.5em; }
+            p { font-size: 0.9em; }
+            #maze-container { grid-template-columns: repeat(5, 30px); grid-template-rows: repeat(5, 30px); }
+            .maze-cell { width: 30px; height: 30px; }
+            .maze-btn { width: 40px; height: 40px; font-size: 1.2em; }
+
+            #hard-level-1-container, #jigsaw-wrapper {
+                transform: scale(0.85);
+                transform-origin: top center;
+            }
+             #tetris-game-area { flex-direction: column; align-items: center; }
+            #hard-level-select-container button, #god-mode-select-container button {
+                font-size: 0.9em;
+                padding: 5px 10px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="game-wrapper">
+        <div id="start-screen" class="screen">
+            <h1 id="game-title" data-lang-key="game_title"></h1>
+            <button id="continue-btn" data-lang-key="continue_btn">继续游戏</button>
+            <button id="new-game-btn" data-lang-key="new_game_btn">新游戏</button>
+            <button id="start-challenge-btn" data-lang-key="challenge_btn" style="display: none;"></button>
+            <div id="hard-level-select-container" style="display: none;">
+                 <h3 data-lang-key="select_level_title">选择挑战关卡</h3>
+                 <button class="level-select-btn" data-level="1" data-lang-key="hl1_title"></button>
+                 <button class="level-select-btn" data-level="3" data-lang-key="hl3_title"></button>
+                 <button class="level-select-btn" data-level="4" data-lang-key="hl4_title"></button>
+                 <button class="level-select-btn" data-level="6" data-lang-key="hl6_title"></button>
+                 <button class="level-select-btn" data-level="7" data-lang-key="hl7_title"></button>
+            </div>
+             <div id="god-mode-select-container" style="display: none;">
+                 <h3>God Mode: Select Level</h3>
+                 <div id="god-main-levels"></div>
+                 <div id="god-hard-levels"></div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <div id="lang-switcher">
+                <button id="lang-zh" class="active">中文</button>
+                <button id="lang-en">English</button>
+            </div>
+            <!-- 主线关卡 1-10 -->
+            <div id="level-1" class="level"> <h2 data-lang-key="l1_title"></h2> <p data-lang-key="l1_desc"></p> <div id="level-1-space"></div> <button id="l1-next-btn" class="hidden-element" data-lang-key="l1_next_btn"></button> </div>
+            <div id="level-2" class="level"> <h2 data-lang-key="l2_title"></h2> <p data-lang-key="l2_desc"></p> <div id="clock-container"> <div id="hour-hand"></div> <div id="minute-hand"></div> </div> <div id="time-display">12 : 00</div> <div id="clock-controls"> <button id="hour-up-btn" data-lang-key="hour_up_btn"></button> <button id="hour-down-btn" data-lang-key="hour_down_btn"></button> </div> <div id="l2-clue" class="hidden-element"> <p data-lang-key="l2_clue_text"></p> <button id="l2-next-btn" data-lang-key="l2_next_btn"></button> </div> </div>
+            <div id="level-3" class="level"> <h2 data-lang-key="l3_title"></h2> <p data-lang-key="l3_desc"></p> <div id="garden"> <div class="flower" data-color="red" style="background-color: #d90429;"></div> <div class="flower" data-color="blue" style="background-color: #0077b6;"></div> <div class="flower" data-color="yellow" style="background-color: #ffbe0b;"></div> <div class="flower" data-color="purple" style="background-color: #8338ec;"></div> </div> <div id="l3-clue" class="hidden-element"> <p data-lang-key="l3_clue_text"></p> <button id="l3-next-btn" data-lang-key="l3_next_btn"></button> </div> </div>
+            <div id="level-4" class="level"> <h2 data-lang-key="l4_title"></h2> <p data-lang-key="l4_desc"></p> <div id="maze-container"></div> <div id="maze-controls"> <div class="d-pad-row"> <button class="maze-btn" id="maze-up">↑</button> </div> <div class="d-pad-row"> <button class="maze-btn" id="maze-left">←</button> <button class="maze-btn" id="maze-down">↓</button> <button class="maze-btn" id="maze-right">→</button> </div> </div> <div id="l4-clue" class="hidden-element"> <p data-lang-key="l4_clue_text"></p> <button id="l4-next-btn" data-lang-key="l4_next_btn"></button> </div> </div>
+            <div id="level-5" class="level"> <div id="light-switch"></div> <h2 data-lang-key="l5_title"></h2> <p data-lang-key="l5_desc"></p> <div id="book">📖</div> <div id="l5-clue" class="hidden-element"> <p data-lang-key="l5_clue_text"></p> <h3 id="book-clue"></h3> <button id="l5-next-btn" class="hidden-element" data-lang-key="l5_next_btn"></button> </div> </div>
+            <div id="level-6" class="level"> <h2 data-lang-key="l6_title"></h2> <p data-lang-key="l6_desc"></p> <div id="door"></div> <div> <input type="text" id="password-input"> <button id="submit-password-btn" data-lang-key="submit_password_btn"></button> </div> </div>
+            <div id="level-7" class="level"> <h2 data-lang-key="l7_title"></h2> <p data-lang-key="l7_desc"></p> <div id="fragments-container"></div> <div id="l7-clue" class="hidden-element"> <p data-lang-key="l7_clue_text"></p> <button id="l7-next-btn" data-lang-key="l7_next_btn"></button> </div> </div>
+            <div id="level-8" class="level"> <h2 data-lang-key="l8_title"></h2> <p data-lang-key="l8_desc"></p> <div id="wall-canvas"> <canvas id="drawing-canvas" width="400" height="300"></canvas> </div> <div id="l8-clue" class="hidden-element"> <p data-lang-key="l8_clue_text"></p> <button id="l8-next-btn" data-lang-key="l8_next_btn"></button> </div> </div>
+            <div id="level-9" class="level"> <h2 data-lang-key="l9_title"></h2> <p data-lang-key="l9_desc"></p> <div id="map-container"> <div id="treasure-spot"></div> </div> <div id="l9-clue" class="hidden-element"> <p data-lang-key="l9_clue_text"></p> <button id="l9-next-btn" data-lang-key="l9_next_btn"></button> </div> </div>
+            <div id="level-10" class="level"> <h2 data-lang-key="l10_title"></h2> <p data-lang-key="l10_desc"></p> <div id="final-chest"></div> <div id="final-buttons"> </div> </div>
+            <div id="win-screen" class="level screen"> <h2 data-lang-key="win_title"></h2> <p data-lang-key="win_desc"></p> <div class="win-buttons"> <button id="challenge-btn" data-lang-key="challenge_btn"></button> <button onclick="location.reload()" data-lang-key="back_to_menu_btn"></button> </div> </div>
+            <div id="message-box" class="message-box"></div>
+        </div>
+
+        <div class="hard-mode-container">
+             <!-- 挑战模式关卡 1-7 -->
+             <div id="hard-level-1" class="level"> <h2 data-lang-key="hl1_title"></h2> <p data-lang-key="hl1_desc"></p> <div id="hard-level-1-container"> <div id="tetris-game-area"> <canvas id="tetris-canvas" width="200" height="400"></canvas> <div id="tetris-info"><p><span data-lang-key="hl1_score"></span>: <span id="tetris-score">0</span></p><p><span data-lang-key="hl1_combo"></span>: <span id="tetris-combo">0</span></p><p data-lang-key="hl1_next"></p><canvas id="next-piece-canvas" width="80" height="80"></canvas><p data-lang-key="hl1_hold"></p><canvas id="hold-piece-canvas" width="80" height="80"></canvas></div> </div> <div id="tetris-controls"> <div class="d-pad-row"><button class="tetris-btn" id="tetris-up">↑</button><button class="tetris-btn" id="tetris-hold-btn">C</button></div> <div class="d-pad-row"><button class="tetris-btn" id="tetris-left">←</button><button class="tetris-btn" id="tetris-down">↓</button><button class="tetris-btn" id="tetris-right">→</button></div><div class="d-pad-row"><button class="tetris-btn" id="tetris-hard-drop">⤋</button></div> </div> </div> </div>
+             <div id="hard-level-2" class="level"> <h2 data-lang-key="hl2_title"></h2> <p data-lang-key="hl2_desc"></p> <div id="hard-level-2-options"></div> </div>
+             <div id="hard-level-3" class="level"> <h2 data-lang-key="hl3_title"></h2> <p data-lang-key="hl3_desc"></p> <div id="jigsaw-wrapper"><div id="jigsaw-board"></div><div id="jigsaw-pieces"></div></div> </div>
+             <div id="hard-level-4" class="level"> <h2 data-lang-key="hl4_title"></h2> <p data-lang-key="hl4_desc"></p> <canvas id="bubble-shooter-canvas" width="400" height="500"></canvas></div>
+             <div id="hard-level-5" class="level"> <h2 data-lang-key="hl5_title"></h2> <p data-lang-key="hl5_desc"></p> <div id="hard-level-5-options"></div> </div>
+             <div id="hard-level-6" class="level"> <h2 data-lang-key="hl6_title"></h2> <p data-lang-key="hl6_desc"></p> <p><span data-lang-key="hl6_score"></span>: <span id="reaction-score">0</span> | <span data-lang-key="hl6_misses"></span>: <span id="reaction-misses">0</span></p> <div id="reaction-box"><div id="reaction-target"></div><div id="reaction-countdown"></div></div> </div>
+             <div id="hard-level-7" class="level"> <h2 data-lang-key="hl7_title"></h2> <p data-lang-key="hl7_desc"></p> <div id="luck-grid"></div> </div>
+             <div id="hard-game-over" class="level screen"> <h2 data-lang-key="hard_game_over_title"></h2> <p data-lang-key="hard_game_over_desc"></p> <div class="win-buttons"> <button id="restart-hard-btn" data-lang-key="restart_hard_btn"></button> <button onclick="location.reload()" data-lang-key="back_to_menu_btn"></button> </div> </div>
+             <div id="hard-win-screen" class="level screen"> <h2 data-lang-key="hard_win_title"></h2> <p data-lang-key="hard_win_desc"></p> <button onclick="location.reload()" data-lang-key="back_to_menu_btn"></button> </div>
+             <div id="single-level-complete" class="level screen"> <h2 data-lang-key="single_level_complete_title"></h2> <button onclick="location.reload()" data-lang-key="back_to_menu_btn"></button> </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 翻译文本 ---
+            const translations = {
+                zh: {
+                    game_title: "解谜之旅",
+                    continue_btn: "继续游戏",
+                    new_game_btn: "新游戏",
+                    challenge_btn: "挑战更高难度",
+                    back_to_menu_btn: "返回目录",
+                    restart_hard_btn: "重新挑战",
+                    select_level_title: "选择挑战关卡",
+                    single_level_complete_title: "关卡完成！",
+                    l1_title: "第一关：星空下的数字",
+                    l1_desc: "在众多星辰中，有 {VAR} 颗与众不同。将它们全部找出。",
+                    l1_next_btn: "记下这个数字，前往下一关",
+                    l1_msg_found: "你找到了所有特殊的星星！数字是 {VAR}！",
+                    l2_title: "第二关：时钟的秘密",
+                    l2_desc: "用你找到的第一个秘密，拨动时间的指针。",
+                    hour_up_btn: "小时+",
+                    hour_down_btn: "小时-",
+                    l2_clue_text: "暗格打开了，里面是一颗{VAR}的宝石。",
+                    l2_next_btn: "带着宝石继续前进",
+                    l2_msg_ding: "时钟发出了“叮”的一声！",
+                    l3_title: "第三关：花园之谜",
+                    l3_desc: "用你发现的色彩，触碰正确的花朵。",
+                    l3_clue_text: "花瓣上写着：{VAR}",
+                    l3_next_btn: "记住这个方向",
+                    l3_msg_correct_flower: "你摘下了正确的花朵！",
+                    l3_msg_wrong_flower: "这不是那朵特别的花...",
+                    l4_title: "第四关：迷宫的回响",
+                    l4_desc: "让你的脚步，回应花瓣上的低语。(使用键盘方向键或按钮)",
+                    l4_clue_text: "在迷宫的尽头，你找到了一本古老的书。",
+                    l4_next_btn: "翻开这本书",
+                    l4_msg_correct_path: "你走出了正确的路径！",
+                    l5_title: "第五关：会说话的书",
+                    l5_desc: "开灯才能阅读，关灯才能倾听。",
+                    l5_clue_text: "黑暗中，书本浮现出一个词...",
+                    l5_next_btn: "牢记这个词",
+                    l5_msg_dark: "天黑了...",
+                    l5_msg_light: "天亮了...",
+                    l5_msg_too_bright: "太亮了，书上什么都看不见。",
+                    l6_title: "第六关：密码之门",
+                    l6_desc: "说出那个神奇的词语。",
+                    password_placeholder: "在此输入密码",
+                    submit_password_btn: "开门",
+                    l6_msg_door_open: "门开了！",
+                    l6_msg_wrong_password: "密码错误！",
+                    l7_title: "第七关：碎片的记忆",
+                    l7_desc: "按正确的顺序点击，拼凑起被遗忘的形状。",
+                    l7_clue_text: "你拼出了一个五角星的形状。",
+                    l7_next_btn: "记住这个形状",
+                    l7_msg_star_complete: "你拼好了一个五角星！",
+                    l7_msg_wrong_order: "顺序不对...",
+                    l8_title: "第八关：光影的轨迹",
+                    l8_desc: "在墙上按顺序点击光点，画出你记下的形状。",
+                    l8_clue_text: "墙上浮现出一组坐标：X:{VAR_X}, Y:{VAR_Y}",
+                    l8_next_btn: "寻找这个坐标",
+                    l8_msg_star_drawn: "五角星完成了！",
+                    l8_msg_click_order: "请按顺序点击！",
+                    l9_title: "第九关：藏宝图的终点",
+                    l9_desc: "在地图上找到最终的坐标。左上角是 (0,0)。",
+                    l9_clue_text: "你找到了一个闪闪发光的宝箱！",
+                    l9_next_btn: "打开宝箱",
+                    l9_msg_found_spot: "你找到了！",
+                    l9_msg_wrong_spot: "你点在了 (X:{VAR_X}, Y:{VAR_Y})，再试试...",
+                    l10_title: "第十关：最终的宝箱",
+                    l10_desc: "最终的密码，是你一路走来的见证。按顺序按下按钮。",
+                    l10_msg_chest_open: "宝箱打开了！",
+                    l10_msg_wrong_sequence: "顺序错误，重置了！",
+                    win_title: "恭喜通关！",
+                    win_desc: "你解开了所有的谜题，证明了你的智慧与洞察力。",
+                    play_again_btn: "再玩一次",
+                    colors: { red: '红色', blue: '蓝色', yellow: '黄色', cyan: '青色', purple: '紫色', green: '绿色', orange: '橙色' },
+                    hard_game_over_title: "挑战失败",
+                    hard_game_over_desc: "再接再厉！",
+                    hard_win_title: "挑战成功！",
+                    hard_win_desc: "你完成了所有高难挑战！",
+                    hl1_title: "挑战1：俄罗斯方块",
+                    hl1_desc: "获得50分即可通关。",
+                    hl1_score: "分数",
+                    hl1_combo: "连击",
+                    hl1_next: "下一个",
+                    hl1_hold: "暂存",
+                    hl2_title: "挑战2：方块记忆",
+                    hl2_desc: "第{VAR}个掉落的方块是什么颜色？",
+                    hl2_wrong_1_chance: "不对，还有一次机会！",
+                    hl3_title: "挑战3：拼图游戏",
+                    hl3_desc: "将碎片拖拽到正确的位置。",
+                    hl4_title: "挑战4：泡泡龙",
+                    hl4_desc: "获得500分即可通关。",
+                    hl5_title: "挑战5：背景记忆",
+                    hl5_desc: "上一关的背景是什么颜色？",
+                    hl6_title: "挑战6：反应力",
+                    hl6_desc: "迅速点击出现的目标！",
+                    hl6_score: "分数",
+                    hl6_misses: "失误",
+                    hl7_title: "挑战7：幸运数字",
+                    hl7_desc: "从1-15中选择一个幸运数字。",
+                },
+                en: {
+                    game_title: "Puzzle Journey",
+                    continue_btn: "Continue",
+                    new_game_btn: "New Game",
+                    challenge_btn: "Hard Mode",
+                    back_to_menu_btn: "Back to Menu",
+                    restart_hard_btn: "Restart Challenge",
+                    select_level_title: "Select Challenge",
+                    single_level_complete_title: "Level Complete!",
+                    l1_title: "Level 1: The Number in the Stars",
+                    l1_desc: "Among the many stars, {VAR} are different. Find them all.",
+                    l1_next_btn: "Note the number and go to the next level",
+                    l1_msg_found: "You found all the special stars! The number is {VAR}!",
+                    l2_title: "Level 2: The Clock's Secret",
+                    l2_desc: "Use the first secret you found to set the hands of time.",
+                    hour_up_btn: "Hour+",
+                    hour_down_btn: "Hour-",
+                    l2_clue_text: "A hidden compartment opened, revealing a {VAR} gem.",
+                    l2_next_btn: "Proceed with the gem",
+                    l2_msg_ding: "The clock chimed!",
+                    l3_title: "Level 3: Mystery of the Garden",
+                    l3_desc: "Use the color you found to touch the correct flower.",
+                    l3_clue_text: "Written on the petal: {VAR}",
+                    l3_next_btn: "Remember this direction",
+                    l3_msg_correct_flower: "You picked the correct flower!",
+                    l3_msg_wrong_flower: "This isn't the special flower...",
+                    l4_title: "Level 4: Echoes in the Maze",
+                    l4_desc: "Let your steps echo the petal's whisper. (Use arrow keys or buttons)",
+                    l4_clue_text: "At the end of the maze, you found an ancient book.",
+                    l4_next_btn: "Open the book",
+                    l4_msg_correct_path: "You followed the correct path!",
+                    l5_title: "Level 5: The Talking Book",
+                    l5_desc: "Read with the lights on, listen with the lights off.",
+                    l5_clue_text: "In the dark, a word appears on the book...",
+                    l5_next_btn: "Memorize this word",
+                    l5_msg_dark: "It's dark now...",
+                    l5_msg_light: "The lights are on...",
+                    l5_msg_too_bright: "It's too bright to see anything on the book.",
+                    l6_title: "Level 6: The Password Door",
+                    l6_desc: "Speak the magic word.",
+                    password_placeholder: "Enter password here",
+                    submit_password_btn: "Open Door",
+                    l6_msg_door_open: "The door opened!",
+                    l6_msg_wrong_password: "Wrong password!",
+                    l7_title: "Level 7: Memory of Fragments",
+                    l7_desc: "Click in the correct order to piece together the forgotten shape.",
+                    l7_clue_text: "You've assembled a star shape.",
+                    l7_next_btn: "Remember this shape",
+                    l7_msg_star_complete: "You completed the star!",
+                    l7_msg_wrong_order: "Wrong order...",
+                    l8_title: "Level 8: Trace of Light and Shadow",
+                    l8_desc: "Click the points on the wall in order to draw the shape you remember.",
+                    l8_clue_text: "A set of coordinates appears on the wall: X:{VAR_X}, Y:{VAR_Y}",
+                    l8_next_btn: "Find these coordinates",
+                    l8_msg_star_drawn: "The star is complete!",
+                    l8_msg_click_order: "Please click in order!",
+                    l9_title: "Level 9: End of the Treasure Map",
+                    l9_desc: "Find the final coordinates on the map. The top-left corner is (0,0).",
+                    l9_clue_text: "You found a glittering treasure chest!",
+                    l9_next_btn: "Open the chest",
+                    l9_msg_found_spot: "You found it!",
+                    l9_msg_wrong_spot: "You clicked at (X:{VAR_X}, Y:{VAR_Y}). Try again...",
+                    l10_title: "Level 10: The Final Chest",
+                    l10_desc: "The final password is a testament to your journey. Press the buttons in order.",
+                    l10_msg_chest_open: "The chest opened!",
+                    l10_msg_wrong_sequence: "Wrong sequence, resetting!",
+                    win_title: "Congratulations!",
+                    win_desc: "You have solved all the puzzles, proving your wisdom and insight.",
+                    play_again_btn: "Play Again",
+                    colors: { red: 'red', blue: 'blue', yellow: 'yellow', cyan: 'cyan', purple: 'purple', green: 'green', orange: 'orange' },
+                    hard_game_over_title: "Challenge Failed",
+                    hard_game_over_desc: "Try again!",
+                    hard_win_title: "Challenge Complete!",
+                    hard_win_desc: "You have mastered all the hard challenges!",
+                    hl1_title: "Challenge 1: Tetris",
+                    hl1_desc: "Score 50 points to pass.",
+                    hl1_score: "Score",
+                    hl1_combo: "Combo",
+                    hl1_next: "Next",
+                    hl1_hold: "Hold",
+                    hl2_title: "Challenge 2: Block Memory",
+                    hl2_desc: "What was the color of the {VAR}th block that fell?",
+                    hl2_wrong_1_chance: "Incorrect, 1 chance left!",
+                    hl3_title: "Challenge 3: Jigsaw Puzzle",
+                    hl3_desc: "Drag the pieces to the correct spots.",
+                    hl4_title: "Challenge 4: Bubble Shooter",
+                    hl4_desc: "Score 500 points to pass.",
+                    hl5_title: "Challenge 5: Background Memory",
+                    hl5_desc: "What was the background color of the last game?",
+                    hl6_title: "Challenge 6: Reaction",
+                    hl6_desc: "Quickly click the target when it appears!",
+                    hl6_score: "Score",
+                    hl6_misses: "Misses",
+                    hl7_title: "Challenge 7: Lucky Number",
+                    hl7_desc: "Pick a lucky number from 1-15.",
+                }
+            };
+
+            // --- 全局变量和函数 ---
+            let currentLang = 'zh';
+            let gameState = {
+                currentLevel: 1,
+                clues: {}
+            };
+            let hardGameState = {
+                currentLevel: 1,
+                lives: 1,
+                data: {},
+                isSingleLevelMode: false
+            };
+
+            const messageBox = document.getElementById('message-box');
+            let loadedGameState = null;
+
+            function shuffle(array) {
+                const newArray = [...array];
+                for (let i = newArray.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                }
+                return newArray;
+            }
+
+            function setupGame() {
+                // 生成本次游戏的所有随机谜底
+                const clues = {};
+                clues.number = Math.floor(Math.random() * 4) + 3; // 3 to 6
+                const colors = ['red', 'blue', 'yellow'];
+                clues.color = colors[Math.floor(Math.random() * colors.length)];
+
+                const Dirs = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+                const DirSymbols = {'ArrowUp': '↑', 'ArrowDown': '↓', 'ArrowLeft': '←', 'ArrowRight': '→'};
+                clues.directions = Array(4).fill(0).map(() => Dirs[Math.floor(Math.random() * Dirs.length)]);
+                clues.directionSymbols = clues.directions.map(d => DirSymbols[d]).join(' ');
+
+                const passwords = ['OPEN', 'MAGIC', 'SECRET', 'LIGHT'];
+                clues.password = passwords[Math.floor(Math.random() * passwords.length)];
+
+                clues.fragmentOrder = shuffle([0, 1, 2, 3, 4]);
+
+                const gridCellSize = 50;
+                const gridWidth = 400 / gridCellSize;
+                const gridHeight = 300 / gridCellSize;
+                clues.coords = {
+                    x: (Math.floor(Math.random() * (gridWidth - 2)) + 1) * gridCellSize,
+                    y: (Math.floor(Math.random() * (gridHeight - 2)) + 1) * gridCellSize,
+                };
+
+                clues.finalSequence = ['star', 'gem', 'book', 'key']; // Fixed logical sequence
+                gameState.clues = clues;
+            }
+
+            function getText(key, ...args) {
+                let text = translations[currentLang][key] || key;
+                args.forEach((arg) => {
+                    if (typeof arg === 'object' && arg !== null) {
+                        Object.keys(arg).forEach(k => {
+                           text = text.replace(`{VAR_${k.toUpperCase()}}`, arg[k]);
+                        });
+                    } else {
+                       text = text.replace('{VAR}', arg);
+                    }
+                });
+                return text;
+            }
+
+            function switchLanguage(lang) {
+                currentLang = lang;
+                document.querySelectorAll('[data-lang-key]').forEach(el => {
+                    const key = el.getAttribute('data-lang-key');
+                    if(el.id === 'game-title') return; // Skip title, it's handled separately
+
+                    let text = translations[lang][key] || '';
+
+                    if (gameState.clues && Object.keys(gameState.clues).length > 0) {
+                        if (key === 'l1_desc' || key === 'l1_msg_found') {
+                            text = text.replace('{VAR}', gameState.clues.number);
+                        } else if (key === 'l2_clue_text') {
+                            const colorName = translations[lang].colors[gameState.clues.color];
+                            text = text.replace('{VAR}', colorName);
+                        } else if (key === 'l3_clue_text') {
+                            text = text.replace('{VAR}', gameState.clues.directionSymbols);
+                        } else if (key === 'l8_clue_text') {
+                            text = text.replace('{VAR_X}', gameState.clues.coords.x).replace('{VAR_Y}', gameState.clues.coords.y);
+                        } else if (key === 'l9_msg_wrong_spot') {
+                           text = '';
+                        }
+                    }
+
+                    if (hardGameState.data && Object.keys(hardGameState.data).length > 0) {
+                         if (key === 'hl2_desc') {
+                            text = text.replace('{VAR}', hardGameState.data.memoryQuestionNumber || '?');
+                        }
+                    }
+
+
+                    if (el.tagName === 'INPUT') {
+                        el.placeholder = text;
+                    } else {
+                        // Preserve child elements for score spans
+                        const scoreSpan = el.querySelector('span');
+                        if (scoreSpan && text.includes(':')) {
+                            const newText = text.split(':')[0];
+                            el.firstChild.textContent = newText + ': ';
+                        } else {
+                            el.innerHTML = text;
+                        }
+                    }
+                });
+                document.getElementById('lang-zh').classList.toggle('active', lang === 'zh');
+                document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+            }
+
+            function showMessage(key, duration = 2000, ...args) {
+                messageBox.textContent = getText(key, ...args);
+                messageBox.classList.add('show');
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                }, duration);
+            }
+
+            function saveGame() {
+                localStorage.setItem('puzzleGameState', JSON.stringify(gameState));
+            }
+
+            function goToLevel(levelNumber) {
+                document.querySelectorAll('.game-container .level').forEach(level => level.classList.remove('active'));
+
+                let nextLevel;
+                if (levelNumber === 'win') {
+                    nextLevel = document.getElementById('win-screen');
+                    localStorage.removeItem('puzzleGameState');
+                    localStorage.setItem('mainGameCompleted', 'true');
+                } else {
+                    gameState.currentLevel = levelNumber;
+                    nextLevel = document.getElementById(`level-${levelNumber}`);
+                    saveGame();
+                }
+
+                if (nextLevel) {
+                    nextLevel.classList.add('active');
+                }
+                const initFunction = window[`initLevel${levelNumber}`];
+                if (typeof initFunction === 'function') {
+                    initFunction();
+                }
+                switchLanguage(currentLang); // 切换关卡时刷新文本
+            }
+
+            document.getElementById('lang-zh').addEventListener('click', () => switchLanguage('zh'));
+            document.getElementById('lang-en').addEventListener('click', () => switchLanguage('en'));
+
+            // --- 游戏启动逻辑 ---
+            const startScreen = document.getElementById('start-screen');
+            const gameContainer = document.querySelector('.game-container');
+            const hardModeContainer = document.querySelector('.hard-mode-container');
+            const continueBtn = document.getElementById('continue-btn');
+            const newGameBtn = document.getElementById('new-game-btn');
+            const challengeBtn = document.getElementById('challenge-btn');
+            const startChallengeBtn = document.getElementById('start-challenge-btn');
+            const restartHardBtn = document.getElementById('restart-hard-btn');
+
+
+            newGameBtn.addEventListener('click', () => {
+                if(startScreen) startScreen.style.display = 'none';
+                if(gameContainer) gameContainer.style.display = 'flex';
+                setupGame();
+                goToLevel(1);
+            });
+
+            continueBtn.addEventListener('click', () => {
+                if (loadedGameState) {
+                    if(startScreen) startScreen.style.display = 'none';
+                    if(gameContainer) gameContainer.style.display = 'flex';
+                    gameState = loadedGameState;
+                    goToLevel(gameState.currentLevel);
+                }
+            });
+
+            function startChallengeSequence() {
+                startScreen.style.display = 'none';
+                gameContainer.style.display = 'none';
+                hardModeContainer.style.display = 'block';
+                hardGameState.isSingleLevelMode = false;
+                startHardMode();
+            }
+
+            function startSingleHardLevel(level) {
+                startScreen.style.display = 'none';
+                gameContainer.style.display = 'none';
+                hardModeContainer.style.display = 'block';
+                hardGameState.isSingleLevelMode = true;
+                goToHardLevel(level);
+            }
+
+            function startSingleMainLevel(level) {
+                startScreen.style.display = 'none';
+                gameContainer.style.display = 'flex';
+                hardModeContainer.style.display = 'none';
+                gameState.isSingleLevelMode = true;
+                setupGame();
+                goToLevel(level);
+            }
+
+            challengeBtn.addEventListener('click', startChallengeSequence);
+            startChallengeBtn.addEventListener('click', startChallengeSequence);
+            restartHardBtn.addEventListener('click', startChallengeSequence);
+            document.querySelectorAll('.level-select-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const level = parseInt(btn.dataset.level);
+                    startSingleHardLevel(level);
+                });
+            });
+
+
+            function initializeStartScreen() {
+                const savedData = localStorage.getItem('puzzleGameState');
+                if (savedData) {
+                    loadedGameState = JSON.parse(savedData);
+                    if(continueBtn) continueBtn.disabled = false;
+                } else {
+                    if(continueBtn) continueBtn.disabled = true;
+                }
+
+                const mainGameCompleted = localStorage.getItem('mainGameCompleted');
+                if (mainGameCompleted === 'true' && startChallengeBtn) {
+                    startChallengeBtn.style.display = 'block';
+                }
+
+                const hardModeCompleted = localStorage.getItem('hardModeCompleted');
+                const levelSelectContainer = document.getElementById('hard-level-select-container');
+                if (hardModeCompleted === 'true' && levelSelectContainer) {
+                    levelSelectContainer.style.display = 'flex';
+                }
+
+                // God Mode Setup
+                const gameTitle = document.getElementById('game-title');
+                const titleText = "解谜之旅";
+                let godModeSequence = [];
+                const correctGodModeSequence = ['旅', '之', '谜', '解'];
+
+                gameTitle.innerHTML = ''; // Clear existing text
+                titleText.split('').forEach(char => {
+                    const span = document.createElement('span');
+                    span.textContent = char;
+                    span.dataset.char = char;
+                    span.onclick = (e) => {
+                         e.stopPropagation(); // Prevent parent click
+                        godModeSequence.push(char);
+                        if (correctGodModeSequence[godModeSequence.length - 1] !== char) {
+                            godModeSequence = [];
+                        }
+                        if (godModeSequence.length === correctGodModeSequence.length) {
+                            if (JSON.stringify(godModeSequence) === JSON.stringify(correctGodModeSequence)) {
+                                activateGodMode();
+                            }
+                            godModeSequence = [];
+                        }
+                    };
+                    gameTitle.appendChild(span);
+                });
+
+                switchLanguage(currentLang);
+            }
+
+            function activateGodMode() {
+                const godModeContainer = document.getElementById('god-mode-select-container');
+                const godMainLevels = document.getElementById('god-main-levels');
+                const godHardLevels = document.getElementById('god-hard-levels');
+
+                godMainLevels.innerHTML = '<h4>Main Levels</h4>';
+                godHardLevels.innerHTML = '<h4>Hard Levels</h4>';
+
+                // Main levels
+                for (let i = 1; i <= 10; i++) {
+                    const btn = document.createElement('button');
+                    btn.textContent = `Lvl ${i}`;
+                    btn.onclick = () => startSingleMainLevel(i);
+                    godMainLevels.appendChild(btn);
+                }
+
+                // Hard levels
+                for (let i = 1; i <= 7; i++) {
+                    const btn = document.createElement('button');
+                    btn.textContent = `Hard ${i}`;
+                    btn.onclick = () => startSingleHardLevel(i);
+                    godHardLevels.appendChild(btn);
+                }
+
+                godModeContainer.style.display = 'flex';
+            }
+
+
+            // --- 主线关卡 1-10 ---
+            // ... (main game level initializations are correct and unchanged)
+            window.initLevel1 = function() {
+                const space = document.getElementById('level-1-space');
+                space.innerHTML = ''; // 清空星星
+                let foundStars = 0;
+                const totalSpecialStars = gameState.clues.number;
+
+                for (let i = 0; i < 100; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.width = `${Math.random() * 2 + 1}px`;
+                    star.style.height = star.style.width;
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.animationDelay = `${Math.random() * 2}s`;
+                    space.appendChild(star);
+                }
+
+                for (let i = 0; i < totalSpecialStars; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star special-star';
+                    star.style.width = '5px';
+                    star.style.height = '5px';
+                    star.style.top = `${15 + Math.random() * 70}%`;
+                    star.style.left = `${15 + Math.random() * 70}%`;
+                    star.dataset.found = "false";
+                    star.addEventListener('click', () => {
+                        if (star.dataset.found === "false") {
+                            star.style.backgroundColor = 'var(--primary-color)';
+                            star.dataset.found = "true";
+                            foundStars++;
+                            if (foundStars === totalSpecialStars) {
+                                showMessage('l1_msg_found', 3000, totalSpecialStars);
+                                document.getElementById('l1-next-btn').classList.remove('hidden-element');
+                            }
+                        }
+                    });
+                    space.appendChild(star);
+                }
+            }
+            document.getElementById('l1-next-btn').addEventListener('click', () => goToLevel(2));
+
+            window.initLevel2 = function() {
+                let currentHour = 12;
+                const hourHand = document.getElementById('hour-hand');
+                const minuteHand = document.getElementById('minute-hand');
+                const timeDisplay = document.getElementById('time-display');
+
+                function updateClock() {
+                    const hourAngle = (currentHour % 12) * 30;
+                    hourHand.style.transform = `translateX(-50%) rotate(${hourAngle}deg)`;
+                    minuteHand.style.transform = `translateX(-50%) rotate(0deg)`;
+                    timeDisplay.textContent = `${currentHour} : 00`;
+
+                    if (currentHour === gameState.clues.number) {
+                        showMessage('l2_msg_ding');
+                        document.getElementById('l2-clue').classList.remove('hidden-element');
+                    }
+                }
+
+                document.getElementById('hour-up-btn').onclick = () => {
+                    currentHour = (currentHour % 12) + 1;
+                    updateClock();
+                };
+                document.getElementById('hour-down-btn').onclick = () => {
+                    currentHour = (currentHour === 1) ? 12 : currentHour - 1;
+                    updateClock();
+                };
+                updateClock();
+            }
+            document.getElementById('l2-next-btn').addEventListener('click', () => goToLevel(3));
+
+            window.initLevel3 = function() {
+                document.querySelectorAll('.flower').forEach(flower => {
+                    flower.onclick = (e) => {
+                        if (e.target.dataset.color === gameState.clues.color) {
+                            showMessage('l3_msg_correct_flower');
+                            document.getElementById('l3-clue').classList.remove('hidden-element');
+                        } else {
+                            showMessage('l3_msg_wrong_flower');
+                        }
+                    }
+                });
+            }
+            document.getElementById('l3-next-btn').addEventListener('click', () => goToLevel(4));
+
+            window.initLevel4 = function() {
+                const mazeContainer = document.getElementById('maze-container');
+                const mazeLayout = [
+                    [1, 0, 1, 1, 1], [1, 0, 0, 0, 1], [1, 1, 1, 0, 1],
+                    [1, 0, 0, 0, 1], [1, 1, 1, 2, 1]
+                ];
+                let moveSequence = [];
+
+                function renderMaze() {
+                    mazeContainer.innerHTML = '';
+                    for (let y = 0; y < mazeLayout.length; y++) {
+                        for (let x = 0; x < mazeLayout[y].length; x++) {
+                            const cell = document.createElement('div');
+                            cell.className = 'maze-cell';
+                            if (mazeLayout[y][x] === 1) cell.classList.add('maze-wall');
+                            else cell.classList.add('maze-path');
+                            if (x === 1 && y === 0) cell.classList.add('maze-player');
+                            mazeContainer.appendChild(cell);
+                        }
+                    }
+                }
+
+                function processMove(key) {
+                     if (!document.getElementById('level-4').classList.contains('active')) return;
+                    moveSequence.push(key);
+                    if (moveSequence.length > gameState.clues.directions.length) moveSequence.shift();
+                    if (JSON.stringify(moveSequence) === JSON.stringify(gameState.clues.directions)) {
+                        showMessage('l4_msg_correct_path');
+                        document.getElementById('l4-clue').classList.remove('hidden-element');
+                        document.removeEventListener('keydown', handleKey);
+                    }
+                }
+
+                const handleKey = (e) => processMove(e.key);
+
+                document.getElementById('maze-up').onclick = () => processMove('ArrowUp');
+                document.getElementById('maze-down').onclick = () => processMove('ArrowDown');
+                document.getElementById('maze-left').onclick = () => processMove('ArrowLeft');
+                document.getElementById('maze-right').onclick = () => processMove('ArrowRight');
+
+                document.addEventListener('keydown', handleKey);
+                const observer = new MutationObserver(() => {
+                    if (!document.getElementById('level-4').classList.contains('active')) {
+                        document.removeEventListener('keydown', handleKey);
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(document.getElementById('level-4'), { attributes: true, subtree: false });
+                renderMaze();
+            }
+            document.getElementById('l4-next-btn').addEventListener('click', () => goToLevel(5));
+
+            window.initLevel5 = function() {
+                const level5 = document.getElementById('level-5');
+                const book = document.getElementById('book');
+                const bookClue = document.getElementById('book-clue');
+                const nextBtn = document.getElementById('l5-next-btn');
+
+                document.getElementById('light-switch').onclick = () => {
+                    level5.classList.toggle('dark');
+                    showMessage(level5.classList.contains('dark') ? 'l5_msg_dark' : 'l5_msg_light');
+                };
+
+                book.onclick = () => {
+                    if (level5.classList.contains('dark')) {
+                        document.getElementById('l5-clue').classList.remove('hidden-element');
+                        bookClue.textContent = gameState.clues.password;
+                        nextBtn.classList.remove('hidden-element');
+                    } else {
+                        showMessage('l5_msg_too_bright');
+                    }
+                };
+            }
+            document.getElementById('l5-next-btn').addEventListener('click', () => goToLevel(6));
+
+            window.initLevel6 = function() {
+                document.getElementById('submit-password-btn').onclick = () => {
+                    const input = document.getElementById('password-input').value;
+                    if (input.toUpperCase() === gameState.clues.password) {
+                        showMessage('l6_msg_door_open');
+                        goToLevel(7);
+                    } else {
+                        showMessage('l6_msg_wrong_password');
+                    }
+                };
+            }
+
+            window.initLevel7 = function() {
+                const container = document.getElementById('fragments-container');
+                container.innerHTML = '';
+                const correctOrder = gameState.clues.fragmentOrder;
+                let clickedOrder = [];
+                const fragments = Array(5).fill(0).map((_, i) => {
+                    const frag = document.createElement('div');
+                    frag.className = 'fragment';
+                    frag.textContent = i + 1;
+                    frag.dataset.id = i;
+                    frag.onclick = () => {
+                        if (parseInt(frag.dataset.id) === correctOrder[clickedOrder.length]) {
+                            clickedOrder.push(parseInt(frag.dataset.id));
+                            frag.classList.add('correct');
+                            frag.onclick = null;
+                            if (clickedOrder.length === correctOrder.length) {
+                                showMessage('l7_msg_star_complete');
+                                document.getElementById('l7-clue').classList.remove('hidden-element');
+                            }
+                        } else {
+                            showMessage('l7_msg_wrong_order');
+                            clickedOrder = [];
+                            container.querySelectorAll('.fragment').forEach(f => f.classList.remove('correct'));
+                            initLevel7();
+                        }
+                    };
+                    return frag;
+                });
+                shuffle(fragments).forEach(f => container.appendChild(f));
+            }
+            document.getElementById('l7-next-btn').addEventListener('click', () => goToLevel(8));
+
+            window.initLevel8 = function() {
+                const canvasContainer = document.getElementById('wall-canvas');
+                const canvas = document.getElementById('drawing-canvas');
+                const ctx = canvas.getContext('2d');
+                canvasContainer.innerHTML = '';
+                canvasContainer.appendChild(canvas);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = 'var(--primary-color)';
+                ctx.lineWidth = 3;
+
+                const points = [
+                    { x: 200, y: 50 }, { x: 350, y: 150 }, { x: 300, y: 280 },
+                    { x: 100, y: 280 }, { x: 50, y: 150 }
+                ];
+                let clickedPoints = 0;
+                let lastPoint = null;
+
+                points.forEach((p, i) => {
+                    const pointEl = document.createElement('div');
+                    pointEl.className = 'star-point';
+                    pointEl.style.left = `${p.x - 7.5}px`;
+                    pointEl.style.top = `${p.y - 7.5}px`;
+                    pointEl.dataset.index = i;
+
+                    pointEl.onclick = () => {
+                        if (parseInt(pointEl.dataset.index) === clickedPoints) {
+                            pointEl.classList.add('clicked');
+                            if (lastPoint) {
+                                ctx.beginPath();
+                                ctx.moveTo(lastPoint.x, lastPoint.y);
+                                ctx.lineTo(p.x, p.y);
+                                ctx.stroke();
+                            }
+                            lastPoint = p;
+                            clickedPoints++;
+                            if (clickedPoints === points.length) {
+                                ctx.beginPath();
+                                ctx.moveTo(lastPoint.x, lastPoint.y);
+                                ctx.lineTo(points[0].x, points[0].y);
+                                ctx.stroke();
+                                showMessage('l8_msg_star_drawn');
+                                document.getElementById('l8-clue').classList.remove('hidden-element');
+                            }
+                        } else {
+                            showMessage('l8_msg_click_order');
+                        }
+                    };
+                    canvasContainer.appendChild(pointEl);
+                });
+            }
+            document.getElementById('l8-next-btn').addEventListener('click', () => goToLevel(9));
+
+            window.initLevel9 = function() {
+                const map = document.getElementById('map-container');
+                const spot = document.getElementById('treasure-spot');
+                map.innerHTML = '';
+                map.appendChild(spot);
+
+                const targetXPercent = gameState.clues.coords.x / 400;
+                const targetYPercent = gameState.clues.coords.y / 300;
+                spot.style.left = `${targetXPercent * 100}%`;
+                spot.style.top = `${targetYPercent * 100}%`;
+
+                map.onclick = (e) => {
+                    const rect = map.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const targetX = map.clientWidth * targetXPercent;
+                    const targetY = map.clientHeight * targetYPercent;
+                    const distance = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
+
+                    if (distance < 35) { // Increased radius
+                        showMessage('l9_msg_found_spot');
+                        map.innerHTML = '<div id="chest-image">💎</div>';
+                        document.getElementById('l9-clue').classList.remove('hidden-element');
+                    } else {
+                        const scaledX = Math.round((x / map.clientWidth) * 400);
+                        const scaledY = Math.round((y / map.clientHeight) * 300);
+                        showMessage('l9_msg_wrong_spot', 2000, {x: scaledX, y: scaledY});
+                    }
+                };
+            }
+            document.getElementById('l9-next-btn').addEventListener('click', () => goToLevel(10));
+
+            window.initLevel10 = function() {
+                const correctSequence = gameState.clues.finalSequence;
+                let playerSequence = [];
+                const buttonsContainer = document.getElementById('final-buttons');
+                buttonsContainer.innerHTML = ''; // Clear just in case
+
+                const buttonData = {
+                    star: { emoji: '⭐', style: { backgroundColor: '#ffbe0b' } },
+                    gem:  { emoji: '💎', style: { backgroundColor: '#d90429' } },
+                    book: { emoji: '📖', style: { backgroundColor: '#8d6e63' } },
+                    key:  { emoji: '🔑', style: { backgroundColor: '#adb5bd' } },
+                    moon: { emoji: '🌙', style: { backgroundColor: '#c9c9c9' } },
+                    sun: { emoji: '☀️', style: { backgroundColor: '#f9d71c' } },
+                    cloud: { emoji: '☁️', style: { backgroundColor: '#a1b0bc' } }
+                };
+
+                const distractorKeys = ['moon', 'sun', 'cloud'];
+                const selectedDistractors = shuffle(distractorKeys).slice(0, 2);
+                const displayKeys = shuffle([...correctSequence, ...selectedDistractors]);
+
+                displayKeys.forEach(key => {
+                    const data = buttonData[key];
+                    const button = document.createElement('button');
+                    button.className = 'final-button';
+                    button.dataset.key = key;
+                    button.innerHTML = data.emoji;
+                    Object.assign(button.style, data.style);
+
+                    button.onclick = () => {
+                        playerSequence.push(button.dataset.key);
+                        button.style.transform = 'scale(0.9)';
+                        setTimeout(() => button.style.transform = 'scale(1)', 200);
+
+                        if (playerSequence.length === correctSequence.length) {
+                            if (JSON.stringify(playerSequence) === JSON.stringify(correctSequence)) {
+                                showMessage('l10_msg_chest_open', 3000);
+                                goToLevel('win');
+                            } else {
+                                showMessage('l10_msg_wrong_sequence');
+                                playerSequence = [];
+                            }
+                        }
+                    };
+                    buttonsContainer.appendChild(button);
+                });
+            }
+
+            // --- 挑战模式 ---
+            function startHardMode() {
+                hardGameState.currentLevel = 1;
+                hardGameState.lives = 1;
+                hardGameState.data = {};
+                goToHardLevel(1);
+            }
+
+            function goToHardLevel(levelNumber) {
+                hardGameState.currentLevel = levelNumber;
+                document.querySelectorAll('.hard-mode-container .level').forEach(l => l.classList.remove('active'));
+
+                let nextLevel;
+                if (levelNumber > 7) {
+                    nextLevel = document.getElementById('hard-win-screen');
+                    localStorage.setItem('hardModeCompleted', 'true');
+                } else {
+                    nextLevel = document.getElementById(`hard-level-${levelNumber}`);
+                }
+
+                if (nextLevel) {
+                    nextLevel.classList.add('active');
+                    const initFunction = window[`initHardLevel${levelNumber}`];
+                    if (typeof initFunction === 'function') {
+                        initFunction();
+                    }
+                    switchLanguage(currentLang);
+                }
+            }
+
+            function handleHardModeWrongAnswer() {
+                if (hardGameState.isSingleLevelMode) {
+                    goToHardGameOver(true);
+                    return;
+                }
+                hardGameState.lives--;
+                if (hardGameState.lives < 0) {
+                    goToHardGameOver(false);
+                } else {
+                    showMessage("回答错误！", 2000);
+                    goToHardGameOver(false);
+                }
+            }
+
+            function goToHardGameOver(isSingleMode) {
+                document.querySelectorAll('.hard-mode-container .level').forEach(l => l.classList.remove('active'));
+                const gameOverScreen = isSingleMode ? document.getElementById('single-level-complete') : document.getElementById('hard-game-over');
+                gameOverScreen.classList.add('active');
+            }
+
+            // 挑战模式关卡实现
+            window.initHardLevel1 = function() { // Tetris
+                const canvas = document.getElementById('tetris-canvas');
+                const context = canvas.getContext('2d');
+                const scoreElement = document.getElementById('tetris-score');
+                const comboElement = document.getElementById('tetris-combo');
+                const nextCanvas = document.getElementById('next-piece-canvas');
+                const nextContext = nextCanvas.getContext('2d');
+                const holdCanvas = document.getElementById('hold-piece-canvas');
+                const holdContext = holdCanvas.getContext('2d');
+                const COLS = 10, ROWS = 20, BLOCK_SIZE = 20;
+
+                context.resetTransform(); context.scale(BLOCK_SIZE, BLOCK_SIZE);
+                nextContext.resetTransform(); nextContext.scale(BLOCK_SIZE, BLOCK_SIZE);
+                holdContext.resetTransform(); holdContext.scale(BLOCK_SIZE, BLOCK_SIZE);
+
+                let score = 0, combo = 0;
+                let board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+                hardGameState.data.tetrisHistory = [];
+
+                const SHAPES = [
+                    { shape: [[1,1,1,1]], color: 'cyan' }, // I
+                    { shape: [[1,1],[1,1]], color: 'yellow' }, // O
+                    { shape: [[0,1,0],[1,1,1]], color: 'purple' }, // T
+                    { shape: [[1,1,0],[0,1,1]], color: 'green' }, // S
+                    { shape: [[0,1,1],[1,1,0]], color: 'red' }, // Z
+                    { shape: [[1,0,0],[1,1,1]], color: 'blue' }, // J
+                    { shape: [[0,0,1],[1,1,1]], color: 'orange' }  // L
+                ];
+
+                let piece = null, nextPiece = null, heldPiece = null, canHold = true;
+                let dropCounter = 0, dropInterval = 1000, lastTime = 0;
+                let animationFrameId;
+
+                function createPiece() {
+                    const typeId = Math.floor(Math.random() * SHAPES.length);
+                    const {shape, color} = SHAPES[typeId];
+                    return { x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2), y: 0, shape: shape, color: color };
+                }
+
+                function newPiece() {
+                    piece = nextPiece || createPiece();
+                    nextPiece = createPiece();
+                    hardGameState.data.tetrisHistory.push(piece.color);
+                    drawNextPiece();
+                    if (collide(board, piece)) {
+                        cancelAnimationFrame(animationFrameId);
+                        goToHardGameOver(hardGameState.isSingleLevelMode);
+                    }
+                }
+
+                function draw() {
+                    context.fillStyle = '#000';
+                    context.fillRect(0, 0, COLS, ROWS);
+                    drawMatrix(context, board, {x: 0, y: 0}, '#555');
+                    if(piece) {
+                        const ghostPiece = { ...piece };
+                        while (!collide(board, ghostPiece)) {
+                            ghostPiece.y++;
+                        }
+                        ghostPiece.y--;
+                        drawMatrix(context, ghostPiece.shape, ghostPiece, 'rgba(255, 255, 255, 0.2)');
+                        drawMatrix(context, piece.shape, piece, piece.color);
+                    }
+                }
+
+                function drawNextPiece() {
+                    nextContext.fillStyle = '#000';
+                    nextContext.fillRect(0, 0, 4, 4);
+                    if (nextPiece) {
+                        const offset = { x: (4 - nextPiece.shape[0].length) / 2, y: (4 - nextPiece.shape.length) / 2 };
+                        drawMatrix(nextContext, nextPiece.shape, offset, nextPiece.color);
+                    }
+                }
+                 function drawHeldPiece() {
+                    holdContext.fillStyle = '#000';
+                    holdContext.fillRect(0, 0, 4, 4);
+                    if (heldPiece) {
+                        const offset = { x: (4 - heldPiece.shape[0].length) / 2, y: (4 - heldPiece.shape.length) / 2 };
+                        drawMatrix(holdContext, heldPiece.shape, offset, heldPiece.color);
+                    }
+                }
+
+                function drawMatrix(ctx, matrix, offset, color) {
+                    ctx.fillStyle = color;
+                    matrix.forEach((row, y) => {
+                        row.forEach((value, x) => {
+                            if (value !== 0) {
+                                ctx.fillRect(x + offset.x, y + offset.y, 1, 1);
+                            }
+                        });
+                    });
+                }
+
+                function collide(board, piece) {
+                    const { shape, x, y } = piece;
+                    for (let row = 0; row < shape.length; row++) {
+                        for (let col = 0; col < shape[row].length; col++) {
+                            if (shape[row][col] && ( (board[row + y] && board[row + y][col + x]) !== 0 || (row + y) >= ROWS) ) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+
+                function merge(board, piece) {
+                    piece.shape.forEach((row, y) => {
+                        row.forEach((value, x) => {
+                            if (value !== 0) {
+                                board[y + piece.y][x + piece.x] = 1;
+                            }
+                        });
+                    });
+                }
+
+                function rotate(matrix) {
+                    const result = [];
+                    for (let i = 0; i < matrix[0].length; i++) {
+                        const row = matrix.map(e => e[i]).reverse();
+                        result.push(row);
+                    }
+                    return result;
+                }
+
+                function pieceRotate() {
+                    if (!piece) return;
+                    const rotated = rotate(piece.shape);
+                    let offset = 1;
+                    const pos = piece.x;
+                    while(collide(board, { ...piece, shape: rotated })) {
+                        piece.x += offset;
+                        offset = -(offset + (offset > 0 ? 1 : -1));
+                        if(offset > rotated[0].length + 1) {
+                            piece.x = pos; // reset position
+                            return;
+                        }
+                    }
+                    piece.shape = rotated;
+                }
+
+                function pieceDrop() {
+                    if (!piece) return;
+                    piece.y++;
+                    if (collide(board, piece)) {
+                        piece.y--;
+                        merge(board, piece);
+                        sweep();
+                        newPiece();
+                        canHold = true;
+                    }
+                    dropCounter = 0;
+                }
+
+                function pieceHardDrop() {
+                    if (!piece) return;
+                    while (!collide(board, piece)) {
+                        piece.y++;
+                    }
+                    piece.y--;
+                    merge(board, piece);
+                    sweep();
+                    newPiece();
+                    canHold = true;
+                    dropCounter = 0;
+                }
+
+                function holdPiece() {
+                    if (!canHold) return;
+                    if (heldPiece) {
+                        [piece, heldPiece] = [heldPiece, piece];
+                        piece.x = Math.floor(COLS / 2) - Math.floor(piece.shape[0].length / 2);
+                        piece.y = 0;
+                    } else {
+                        heldPiece = piece;
+                        newPiece();
+                    }
+                    canHold = false;
+                    drawHeldPiece();
+                }
+
+                function pieceMove(dir) {
+                    if (!piece) return;
+                    piece.x += dir;
+                    if (collide(board, piece)) {
+                        piece.x -= dir;
+                    }
+                }
+
+                function sweep() {
+                    let clearedLines = 0;
+                    outer: for (let y = board.length - 1; y > 0; --y) {
+                        for (let x = 0; x < board[y].length; ++x) {
+                            if (board[y][x] === 0) {
+                                continue outer;
+                            }
+                        }
+                        const row = board.splice(y, 1)[0].fill(0);
+                        board.unshift(row);
+                        ++y;
+                        clearedLines++;
+                    }
+                    if (clearedLines > 0) {
+                        let baseScore = clearedLines === 4 ? 5 : clearedLines;
+                        score += baseScore + combo;
+                        combo++;
+                    } else {
+                        combo = 0;
+                    }
+                }
+
+                function update(time = 0) {
+                    const deltaTime = time - lastTime;
+                    lastTime = time;
+                    dropCounter += deltaTime;
+                    if (dropCounter > dropInterval) {
+                        pieceDrop();
+                    }
+                    draw();
+                    if(scoreElement) scoreElement.textContent = score;
+                    if(comboElement) comboElement.textContent = combo;
+                    if (score >= 50) {
+                        cancelAnimationFrame(animationFrameId);
+                        if (hardGameState.isSingleLevelMode) {
+                            goToHardGameOver(true);
+                        } else {
+                            goToHardLevel(2);
+                        }
+                        return;
+                    }
+                    animationFrameId = requestAnimationFrame(update);
+                }
+
+                const handleTetrisKey = (e) => {
+                    if (!document.getElementById('hard-level-1').classList.contains('active')) return;
+                    if (e.code === 'ArrowLeft') pieceMove(-1);
+                    else if (e.code === 'ArrowRight') pieceMove(1);
+                    else if (e.code === 'ArrowDown') pieceDrop();
+                    else if (e.code === 'ArrowUp') pieceRotate();
+                    else if (e.code === 'Space') {
+                        e.preventDefault();
+                        pieceHardDrop();
+                    } else if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                        holdPiece();
+                    }
+                };
+
+                document.addEventListener('keydown', handleTetrisKey);
+                document.getElementById('tetris-left').onclick = () => pieceMove(-1);
+                document.getElementById('tetris-right').onclick = () => pieceMove(1);
+                document.getElementById('tetris-down').onclick = () => pieceDrop();
+                document.getElementById('tetris-up').onclick = () => pieceRotate();
+                document.getElementById('tetris-hard-drop').onclick = () => pieceHardDrop();
+                document.getElementById('tetris-hold-btn').onclick = () => holdPiece();
+
+                const observer = new MutationObserver(() => {
+                    if (!document.getElementById('hard-level-1').classList.contains('active')) {
+                        cancelAnimationFrame(animationFrameId);
+                        document.removeEventListener('keydown', handleTetrisKey);
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(document.getElementById('hard-level-1'), { attributes: true, subtree: false });
+
+                newPiece();
+                update();
+            }
+
+            window.initHardLevel2 = function() { /* Memory 1 */
+                const optionsContainer = document.getElementById('hard-level-2-options');
+                const questionElement = document.querySelector('#hard-level-2 p');
+                optionsContainer.innerHTML = '';
+
+                const questionIndex = Math.floor(Math.random() * 5); // 0 to 4
+                const questionNumber = questionIndex + 1;
+                hardGameState.data.memoryQuestionNumber = questionNumber;
+
+                questionElement.innerHTML = getText('hl2_desc', questionNumber);
+
+                const correctColor = hardGameState.data.tetrisHistory[questionIndex];
+                const allColors = ['cyan', 'yellow', 'purple', 'green', 'red', 'blue', 'orange'];
+                const distractors = shuffle(allColors.filter(c => c !== correctColor)).slice(0, 3);
+                const options = shuffle([correctColor, ...distractors]);
+
+                let chances = 2;
+
+                options.forEach(color => {
+                    const btn = document.createElement('button');
+                    btn.className = 'color-option-btn';
+                    btn.style.backgroundColor = color;
+                    btn.onclick = () => {
+                        if (color === correctColor) {
+                            if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } else { goToHardLevel(3); }
+                        } else {
+                            chances--;
+                            btn.disabled = true;
+                            if (chances > 0) {
+                                showMessage("hl2_wrong_1_chance", 1500);
+                            } else {
+                                handleHardModeWrongAnswer();
+                            }
+                        }
+                    };
+                    optionsContainer.appendChild(btn);
+                });
+            };
+            window.initHardLevel3 = function() { /* Jigsaw Puzzle */
+                const wrapper = document.getElementById('jigsaw-wrapper');
+                wrapper.innerHTML = '<div id="jigsaw-board"></div><div id="jigsaw-pieces"></div>';
+                const board = document.getElementById('jigsaw-board');
+                const piecesContainer = document.getElementById('jigsaw-pieces');
+
+                const size = 6;
+                const pieceSize = 50;
+                const totalSize = size * pieceSize;
+
+                board.style.gridTemplateColumns = `repeat(${size}, ${pieceSize}px)`;
+                board.style.gridTemplateRows = `repeat(${size}, ${pieceSize}px)`;
+                piecesContainer.style.width = `${totalSize + (size -1) * 5 + 10}px`;
+
+                const imgId = Math.floor(Math.random() * 1000);
+                const imageUrl = `https://picsum.photos/${totalSize}?random=${imgId}`;
+
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.src = imageUrl;
+
+                img.onload = () => {
+                    let pieces = [];
+                    let placedCount = 0;
+
+                    for (let i = 0; i < size * size; i++) {
+                        const slot = document.createElement('div');
+                        slot.className = 'jigsaw-slot';
+                        slot.dataset.index = i;
+                        slot.style.width = `${pieceSize}px`;
+                        slot.style.height = `${pieceSize}px`;
+                        board.appendChild(slot);
+
+                        const piece = document.createElement('div');
+                        piece.className = 'jigsaw-piece';
+                        piece.dataset.index = i;
+                        piece.draggable = true;
+                        piece.style.width = `${pieceSize}px`;
+                        piece.style.height = `${pieceSize}px`;
+                        piece.style.backgroundImage = `url('${imageUrl}')`;
+                        const col = i % size;
+                        const row = Math.floor(i / size);
+                        piece.style.backgroundSize = `${totalSize}px ${totalSize}px`;
+                        piece.style.backgroundPosition = `-${col * pieceSize}px -${row * pieceSize}px`;
+                        pieces.push(piece);
+                    }
+
+                    shuffle(pieces).forEach(p => piecesContainer.appendChild(p));
+
+                    let draggedPiece = null;
+
+                    piecesContainer.addEventListener('dragstart', (e) => {
+                        if (e.target.classList.contains('jigsaw-piece')) {
+                            draggedPiece = e.target;
+                            setTimeout(() => e.target.classList.add('dragging'), 0);
+                        }
+                    });
+
+                    piecesContainer.addEventListener('dragend', (e) => {
+                         if (e.target.classList.contains('jigsaw-piece')) {
+                            e.target.classList.remove('dragging');
+                            draggedPiece = null;
+                         }
+                    });
+
+                    board.addEventListener('dragover', (e) => e.preventDefault());
+
+                    board.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        if (e.target.classList.contains('jigsaw-slot') && !e.target.hasChildNodes()) {
+                            if (draggedPiece && e.target.dataset.index === draggedPiece.dataset.index) {
+                                e.target.appendChild(draggedPiece);
+                                draggedPiece.draggable = false;
+                                draggedPiece.style.cursor = 'default';
+                                e.target.classList.add('dropped');
+                                placedCount++;
+                                if (placedCount === size * size) {
+                                    if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } else { setTimeout(() => goToHardLevel(4), 500); }
+                                }
+                            }
+                        }
+                    });
+                };
+                 img.onerror = () => {
+                    wrapper.innerHTML = `<p>${getText('error_loading_image')}</p>`;
+                };
+            };
+            window.initHardLevel4 = function() { /* Bubble Shooter */
+                const canvas = document.getElementById('bubble-shooter-canvas');
+                const ctx = canvas.getContext('2d');
+                const colors = ['red', 'green', 'blue', 'yellow', 'purple'];
+                hardGameState.data.bubbleShooterBg = colors[Math.floor(Math.random() * colors.length)];
+                canvas.style.backgroundColor = hardGameState.data.bubbleShooterBg;
+                // Simplified version: just a placeholder for now
+                ctx.fillStyle = 'white';
+                ctx.font = '20px Quicksand';
+                ctx.textAlign = 'center';
+                ctx.fillText("Bubble Shooter - Auto Pass for Demo", canvas.width / 2, canvas.height / 2);
+                setTimeout(() => { if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } else { goToHardLevel(5); } }, 2000);
+            };
+            window.initHardLevel5 = function() { /* Memory 2 */
+                 const optionsContainer = document.getElementById('hard-level-5-options');
+                optionsContainer.innerHTML = '';
+                const correctColor = hardGameState.data.bubbleShooterBg;
+                const allColors = ['red', 'green', 'blue', 'yellow', 'purple'];
+                const distractors = shuffle(allColors.filter(c => c !== correctColor)).slice(0, 3);
+                const options = shuffle([correctColor, ...distractors]);
+
+                options.forEach(color => {
+                    const btn = document.createElement('button');
+                    btn.className = 'color-option-btn';
+                    btn.style.backgroundColor = color;
+                    btn.onclick = () => {
+                        if (color === correctColor) {
+                            if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } else { goToHardLevel(6); }
+                        } else {
+                            handleHardModeWrongAnswer();
+                        }
+                    };
+                    optionsContainer.appendChild(btn);
+                });
+            };
+            window.initHardLevel6 = function() { /* Reaction */
+                const box = document.getElementById('reaction-box');
+                const target = document.getElementById('reaction-target');
+                const countdownEl = document.getElementById('reaction-countdown');
+                const scoreEl = document.getElementById('reaction-score');
+                const missesEl = document.getElementById('reaction-misses');
+                let score = 0, misses = 0;
+                let timeoutId;
+
+                function startReactionGame() {
+                    countdownEl.style.display = 'none';
+                    showTarget();
+                }
+
+                function countdown(count) {
+                    if (count > 0) {
+                        countdownEl.textContent = count;
+                        countdownEl.style.display = 'block';
+                        setTimeout(() => countdown(count - 1), 1000);
+                    } else {
+                        startReactionGame();
+                    }
+                }
+
+                function showTarget() {
+                    const size = Math.floor(Math.random() * 31) + 30; // 30px to 60px
+                    target.style.width = `${size}px`;
+                    target.style.height = `${size}px`;
+                    target.style.backgroundColor = `hsl(${Math.random() * 360}, 90%, 60%)`;
+                    target.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+
+                    target.style.display = 'block';
+                    target.style.top = `${Math.random() * (box.clientHeight - size)}px`;
+                    target.style.left = `${Math.random() * (box.clientWidth - size)}px`;
+
+                    timeoutId = setTimeout(() => {
+                        misses++;
+                        if(missesEl) missesEl.textContent = misses;
+                        if (misses >= 2) {
+                            clearTimeout(timeoutId);
+                            goToHardGameOver(hardGameState.isSingleLevelMode);
+                        } else {
+                            showTarget();
+                        }
+                    }, 1200 - (score * 20)); // Gets faster
+                }
+
+                target.onclick = () => {
+                    score++;
+                    if(scoreEl) scoreEl.textContent = score;
+                    target.style.display = 'none';
+                    clearTimeout(timeoutId);
+                    if (score >= 20) {
+                        if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } else { goToHardLevel(7); }
+                    } else {
+                        setTimeout(showTarget, Math.random() * 400 + 100); // Faster appearance
+                    }
+                };
+
+                if(scoreEl) scoreEl.textContent = 0;
+                if(missesEl) missesEl.textContent = 0;
+                countdown(3);
+            };
+            window.initHardLevel7 = function() { /* Luck */
+                const grid = document.getElementById('luck-grid');
+                grid.innerHTML = '';
+                const luckyNumber = Math.ceil(Math.random() * 15);
+                let chances = 2;
+
+                for (let i = 1; i <= 15; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'luck-btn';
+                    btn.textContent = i;
+                    btn.onclick = () => {
+                        if (i === luckyNumber) {
+                            if (hardGameState.isSingleLevelMode) { goToHardGameOver(true); } else { goToHardLevel(8); }
+                        } else {
+                            chances--;
+                            btn.disabled = true;
+                            if (chances <= 0) {
+                                goToHardGameOver(hardGameState.isSingleLevelMode);
+                            } else {
+                                showMessage("不对，还有一次机会！", 1500);
+                            }
+                        }
+                    };
+                    grid.appendChild(btn);
+                }
+            };
+
+
+            // --- 初始化游戏 ---
+            initializeStartScreen();
+        });
+    </script>
+</body>
+</html>

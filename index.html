@@ -209,70 +209,45 @@
         }
         .message-box.show { opacity: 1; }
 
-        /* --- NEW INVENTORY SYSTEM (Mobile Friendly & Collapsible) --- */
+        /* --- 1. Collapsible Inventory Button (Top Right) --- */
         #inventory-bar {
             position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%); /* Centers it perfectly */
-            width: 90%;
-            max-width: 400px;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
+            top: 60px; /* Moves it out of the way of the bottom buttons */
+            right: 15px;
+            width: auto;
+            max-width: 250px;
+            background: rgba(0, 0, 0, 0.9);
             border: 2px solid var(--primary-color);
             border-radius: 15px;
-            padding: 12px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            z-index: 500;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            padding: 10px;
+            z-index: 1000;
             transition: all 0.3s ease;
         }
 
         #inventory-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            width: 100%;
+            justify-content: center;
             cursor: pointer;
-            padding: 5px 0;
+            font-size: 1.5em; /* Large Bag Icon */
         }
 
-        #inventory-toggle-icon {
-            color: var(--primary-color);
-            transition: transform 0.3s ease;
-            font-size: 0.9em;
-        }
-
-        /* Hides items and flips the arrow when collapsed */
         #inventory-bar.collapsed #inventory-items {
             display: none;
-        }
-        #inventory-bar.collapsed #inventory-toggle-icon {
-            transform: rotate(180deg);
         }
 
         #inventory-items {
             display: flex;
-            flex-wrap: wrap; /* MAGIC FIX: Drops items to a new line! */
-            gap: 10px;
-            max-height: 120px; /* Limits height so it doesn't cover the whole screen */
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            max-height: 200px;
             overflow-y: auto;
-            justify-content: flex-start;
         }
 
-        .inventory-item {
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5em;
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: inset 0 0 10px rgba(255,255,255,0.2);
+        /* --- 2. Fix Level Overlap --- */
+        .level {
+            padding-bottom: 80px; /* Pushes content up so it's never behind inventory */
         }
 
         /* --- 5. Level Specific Styles --- */
@@ -714,8 +689,7 @@
         <!-- NEW: Persistent Inventory Bar -->
         <div id="inventory-bar" class="hidden-element collapsed">
             <div id="inventory-header">
-                <span style="font-size: 0.9em; color: var(--primary-color); font-weight: bold;">🎒 INVENTORY</span>
-                <span id="inventory-toggle-icon">▲</span>
+                <span>🎒</span> 
             </div>
             <div id="inventory-items"></div>
         </div>
@@ -980,7 +954,7 @@
                 type();
             }
 
-            // --- 4. NEW: Inventory System (Collapsible) ---
+// --- 4. NEW: Inventory System (Collapsible) ---
             function addItemToInventory(emoji, name) {
                 const invBar = document.getElementById('inventory-bar');
                 const invItems = document.getElementById('inventory-items');
@@ -996,15 +970,15 @@
                 invItems.appendChild(item);
                 
                 playSound('success');
-                showMessage(`获得了物品 / Acquired: ${name}`, 2000);
+                showMessage(`获得了物品: ${name}`, 2000);
             }
 
-            // Click listener to toggle Open/Close
+            // Click listener to toggle Open/Close (Add this right after the function)
             document.getElementById('inventory-header').addEventListener('click', () => {
                 playSound('click');
                 document.getElementById('inventory-bar').classList.toggle('collapsed');
             });
-
+            
             // --- 5. Core Utility Functions ---
             function shuffle(array) {
                 const newArray = [...array];

@@ -194,24 +194,59 @@
         }
         .message-box.show { opacity: 1; }
 
-        /* --- NEW INVENTORY SYSTEM --- */
+        /* --- NEW INVENTORY SYSTEM (Mobile Friendly & Collapsible) --- */
         #inventory-bar {
             position: fixed;
             bottom: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.6);
+            left: 50%;
+            transform: translateX(-50%); /* Centers it perfectly */
+            width: 90%;
+            max-width: 400px;
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(10px);
-            border: 1px solid var(--primary-color);
+            border: 2px solid var(--primary-color);
             border-radius: 15px;
-            padding: 10px 20px;
+            padding: 12px 20px;
             display: flex;
-            align-items: center;
-            gap: 15px;
+            flex-direction: column;
+            gap: 12px;
             z-index: 500;
-            box-shadow: 0 0 15px rgba(252, 163, 17, 0.2);
-            transition: all 0.5s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            transition: all 0.3s ease;
         }
-        #inventory-items { display: flex; gap: 10px; }
+
+        #inventory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            cursor: pointer;
+            padding: 5px 0;
+        }
+
+        #inventory-toggle-icon {
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        /* Hides items and flips the arrow when collapsed */
+        #inventory-bar.collapsed #inventory-items {
+            display: none;
+        }
+        #inventory-bar.collapsed #inventory-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        #inventory-items {
+            display: flex;
+            flex-wrap: wrap; /* MAGIC FIX: Drops items to a new line! */
+            gap: 10px;
+            max-height: 120px; /* Limits height so it doesn't cover the whole screen */
+            overflow-y: auto;
+            justify-content: flex-start;
+        }
+
         .inventory-item {
             width: 40px;
             height: 40px;
@@ -662,8 +697,11 @@
         <div id="message-box" class="message-box"></div>
 
         <!-- NEW: Persistent Inventory Bar -->
-        <div id="inventory-bar" class="hidden-element">
-            <span style="font-size: 0.9em; color: var(--primary-color); font-weight: bold;">INVENTORY:</span>
+        <div id="inventory-bar" class="hidden-element collapsed">
+            <div id="inventory-header">
+                <span style="font-size: 0.9em; color: var(--primary-color); font-weight: bold;">🎒 INVENTORY</span>
+                <span id="inventory-toggle-icon">▲</span>
+            </div>
             <div id="inventory-items"></div>
         </div>
     </div>
@@ -927,11 +965,14 @@
                 type();
             }
 
-            // --- 4. NEW: Inventory System ---
+            // --- 4. NEW: Inventory System (Collapsible) ---
             function addItemToInventory(emoji, name) {
                 const invBar = document.getElementById('inventory-bar');
                 const invItems = document.getElementById('inventory-items');
+                
+                // Show bar and auto-expand it so the player sees their new item!
                 invBar.classList.remove('hidden-element');
+                invBar.classList.remove('collapsed');
                 
                 const item = document.createElement('div');
                 item.className = 'inventory-item';
@@ -942,6 +983,12 @@
                 playSound('success');
                 showMessage(`获得了物品 / Acquired: ${name}`, 2000);
             }
+
+            // Click listener to toggle Open/Close
+            document.getElementById('inventory-header').addEventListener('click', () => {
+                playSound('click');
+                document.getElementById('inventory-bar').classList.toggle('collapsed');
+            });
 
             // --- 5. Core Utility Functions ---
             function shuffle(array) {

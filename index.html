@@ -206,15 +206,80 @@
         .flower { width: 80px; height: 80px; border-radius: 50%; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; border: 3px solid rgba(255,255,255,0.2); }
         .flower:hover { transform: scale(1.15) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
 
-        /* Level 4: Maze */
-        #maze-container { display: grid; grid-template-columns: repeat(5, 45px); grid-template-rows: repeat(5, 45px); border: 3px solid var(--primary-color); border-radius: 8px; overflow: hidden; }
-        .maze-cell { width: 45px; height: 45px; background-color: rgba(0,0,0,0.3); transition: background-color 0.2s; }
-        .maze-wall { background-color: #4a4e69; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
-        .maze-player { background-color: var(--primary-color); border-radius: 50%; box-shadow: 0 0 10px var(--primary-color); transform: scale(0.8); }
-        #maze-controls { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-        #maze-controls .d-pad-row { display: flex; gap: 8px; }
-        .maze-btn { width: 55px; height: 55px; font-size: 1.5em; padding: 0; display: flex; justify-content: center; align-items: center; border-radius: 15px; }
+        /* Level 4: Maze Remastered (Dark & Neon) */
+        #maze-container { 
+            display: grid; 
+            border: 3px solid rgba(0, 240, 255, 0.3); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            background-color: #020617; 
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 240, 255, 0.1); 
+            padding: 8px; 
+            gap: 3px; 
+        }
+        .maze-cell { 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 4px; 
+            background-color: rgba(255,255,255,0.03); /* Subtle path color */
+            transition: background-color 0.2s; 
+            position: relative; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .maze-wall { 
+            background-color: #02040a; /* Dark walls */
+            box-shadow: inset 0 0 10px rgba(0,0,0,1); 
+        }
+        .maze-player { 
+            width: 85%; 
+            height: 85%; 
+            background-color: #00f0ff; 
+            border-radius: 50%; /* Makes it a circle! */
+            box-shadow: 0 0 15px #00f0ff, 0 0 25px #00f0ff, inset 0 0 10px #fff; 
+            animation: pulseGlow 1.5s infinite alternate; 
+            z-index: 10;
+        }
+        
+        @keyframes pulseGlow { 
+            from { transform: scale(0.9); box-shadow: 0 0 10px #00f0ff; } 
+            to { transform: scale(1.1); box-shadow: 0 0 20px #00f0ff, 0 0 30px #00f0ff; } 
+        }
 
+        #maze-controls { 
+            margin-top: 25px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 12px; 
+        }
+        #maze-controls .d-pad-row { 
+            display: flex; 
+            gap: 12px; 
+        }
+        .maze-btn { 
+            width: 60px; 
+            height: 60px; 
+            font-size: 2em; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            border-radius: 12px; 
+            background: rgba(0,0,0,0.4); 
+            border: 2px solid var(--primary-color); 
+            color: var(--primary-color); 
+            box-shadow: 0 0 15px rgba(252, 163, 17, 0.2), inset 0 0 10px rgba(252, 163, 17, 0.2); 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .maze-btn:hover, .maze-btn:active { 
+            background: rgba(252, 163, 17, 0.2); 
+            box-shadow: 0 0 20px rgba(252, 163, 17, 0.6), inset 0 0 15px rgba(252, 163, 17, 0.4); 
+            text-shadow: 0 0 10px var(--primary-color); 
+            transform: scale(0.95); 
+        }
+        
         /* Level 5: Book */
         #level-5 { transition: background-color 0.8s; border-radius: 20px; }
         #level-5.dark { background-color: #000; box-shadow: inset 0 0 50px rgba(0,0,0,1); }
@@ -1148,47 +1213,105 @@
 
             window.initLevel4 = function() {
                 const mazeContainer = document.getElementById('maze-container');
-                const mazeLayout = [
-                    [1, 0, 1, 1, 1], [1, 0, 0, 0, 1], [1, 1, 1, 0, 1],
-                    [1, 0, 0, 0, 1], [1, 1, 1, 2, 1]
-                ];
+                const size = 9; // Creates a 9x9 grid
+                const center = 4; // Start in the dead center
+                
+                // 1. Generate a solid block of walls
+                let layout = Array(size).fill(0).map(() => Array(size).fill(1));
+                layout[center][center] = 0; // Clear the starting spot
+                
+                // 2. Carve the EXACT path required to win based on Level 3 Clues
+                let carveX = center, carveY = center;
+                gameState.clues.directions.forEach(dir => {
+                    if (dir === 'ArrowUp') carveY--;
+                    if (dir === 'ArrowDown') carveY++;
+                    if (dir === 'ArrowLeft') carveX--;
+                    if (dir === 'ArrowRight') carveX++;
+                    if(carveY >= 0 && carveY < size && carveX >= 0 && carveX < size) {
+                        layout[carveY][carveX] = 0; // Make it a valid path
+                    }
+                });
+
+                // 3. Add some random fake branches to make it look like a real maze
+                for (let i = 0; i < 20; i++) {
+                    let rx = Math.floor(Math.random() * (size - 2)) + 1;
+                    let ry = Math.floor(Math.random() * (size - 2)) + 1;
+                    layout[ry][rx] = 0;
+                }
+
+                let playerX = center, playerY = center;
                 let moveSequence = [];
 
                 function renderMaze() {
                     mazeContainer.innerHTML = '';
-                    for (let y = 0; y < mazeLayout.length; y++) {
-                        for (let x = 0; x < mazeLayout[y].length; x++) {
+                    // Set grid columns and rows dynamically via JS
+                    mazeContainer.style.gridTemplateColumns = `repeat(${size}, 32px)`;
+                    mazeContainer.style.gridTemplateRows = `repeat(${size}, 32px)`;
+                    
+                    for (let y = 0; y < size; y++) {
+                        for (let x = 0; x < size; x++) {
                             const cell = document.createElement('div');
                             cell.className = 'maze-cell';
-                            if (mazeLayout[y][x] === 1) cell.classList.add('maze-wall');
+                            if (layout[y][x] === 1) cell.classList.add('maze-wall');
                             else cell.classList.add('maze-path');
-                            if (x === 1 && y === 0) cell.classList.add('maze-player');
+                            
+                            // Place the glowing circular player
+                            if (x === playerX && y === playerY) {
+                                const player = document.createElement('div');
+                                player.className = 'maze-player';
+                                cell.appendChild(player);
+                            }
                             mazeContainer.appendChild(cell);
                         }
                     }
                 }
 
                 function processMove(key) {
-                     if (!document.getElementById('level-4').classList.contains('active')) return;
-                    moveSequence.push(key);
-                    if (moveSequence.length > gameState.clues.directions.length) moveSequence.shift();
-                    if (JSON.stringify(moveSequence) === JSON.stringify(gameState.clues.directions)) {
-                        showMessage('l4_msg_correct_path');
-                        const clue = document.getElementById('l4-clue');
-                        clue.classList.remove('hidden-element');
-                        clue.classList.add('pop-in');
-                        document.removeEventListener('keydown', handleKey);
+                    if (!document.getElementById('level-4').classList.contains('active')) return;
+                    
+                    let nx = playerX, ny = playerY;
+                    if (key === 'ArrowUp') ny--;
+                    if (key === 'ArrowDown') ny++;
+                    if (key === 'ArrowLeft') nx--;
+                    if (key === 'ArrowRight') nx++;
+                    
+                    // Check if the move is inside the grid AND not a wall
+                    if (nx >= 0 && nx < size && ny >= 0 && ny < size && layout[ny][nx] === 0) {
+                        playerX = nx;
+                        playerY = ny;
+                        
+                        moveSequence.push(key);
+                        if (moveSequence.length > gameState.clues.directions.length) moveSequence.shift();
+                        
+                        renderMaze();
+                        
+                        // Check Win Condition
+                        if (JSON.stringify(moveSequence) === JSON.stringify(gameState.clues.directions)) {
+                            showMessage('l4_msg_correct_path');
+                            const clue = document.getElementById('l4-clue');
+                            clue.classList.remove('hidden-element');
+                            clue.classList.add('pop-in');
+                            document.removeEventListener('keydown', handleKey);
+                        }
+                    } else {
+                        // Hit a wall! Trigger the shake animation
+                        mazeContainer.classList.remove('shake');
+                        void mazeContainer.offsetWidth; // Force a CSS reflow
+                        mazeContainer.classList.add('shake');
                     }
                 }
 
                 const handleKey = (e) => processMove(e.key);
 
+                // Button Support
                 document.getElementById('maze-up').onclick = () => processMove('ArrowUp');
                 document.getElementById('maze-down').onclick = () => processMove('ArrowDown');
                 document.getElementById('maze-left').onclick = () => processMove('ArrowLeft');
                 document.getElementById('maze-right').onclick = () => processMove('ArrowRight');
 
+                // Keyboard Support
                 document.addEventListener('keydown', handleKey);
+                
                 const observer = new MutationObserver(() => {
                     if (!document.getElementById('level-4').classList.contains('active')) {
                         document.removeEventListener('keydown', handleKey);
@@ -1196,9 +1319,10 @@
                     }
                 });
                 observer.observe(document.getElementById('level-4'), { attributes: true, subtree: false });
+                
+                // Initial Render
                 renderMaze();
             }
-            document.getElementById('l4-next-btn').addEventListener('click', () => goToLevel(5));
 
             window.initLevel5 = function() {
                 const level5 = document.getElementById('level-5');
